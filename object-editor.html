@@ -1,0 +1,508 @@
+<!--
+@license
+Copyright 2016 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
+<link rel="import" href="../paper-styles/paper-styles.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-menu/paper-menu.html">
+<link rel="import" href="../paper-autocomplete/paper-autocomplete.html">
+<link rel="import" href="../arc-icons/arc-icons.html">
+<!--
+`<body-json-editor>` A JSON editor for HTTP body
+
+### Example
+```
+<body-json-editor></body-json-editor>
+```
+
+### Styling
+`<body-json-editor>` provides the following custom properties and mixins for styling:
+
+Custom property | Description | Default
+----------------|-------------|----------
+`--body-json-editor` | Mixin applied to the element | `{}`
+
+@group UI Elements
+@element object-editor
+@demo demo/index.html
+-->
+<dom-module id="object-editor">
+  <template>
+    <style>
+     :host {
+      display: block;
+      --paper-input-container-color: rgba(0, 0, 0, 0.24);
+      --paper-dropdown-menu-input: {
+        color: #673AB7;
+        /*background-color: #673AB7;*/
+      }
+      --paper-dropdown-menu-button: {
+        color: #673AB7;
+        /*background-color: #673AB7;*/
+      }
+    }
+
+    paper-input {
+      display: inline-block;
+    }
+
+    paper-icon-button {
+      width: 32px;
+      height: 32px;
+    }
+
+    .indention {
+      margin-left: 12px;
+    }
+
+    .key-line {
+      @apply(--layout-horizontal);
+    }
+
+    .key-line.objectable {
+      @apply(--layout-vertical);
+    }
+
+    .key-input {
+      color: rgba(0, 0, 0, 0.54);
+    }
+
+    .value-part {
+      @apply(--layout-flex);
+    }
+
+    .action-button {
+      /*font-size: 14px;*/
+      color: var(--primary-color);
+      /*padding: 8px 8px;*/
+      /*min-width: auto;*/
+    }
+
+    .punctuation {
+      @apply(--paper-font-body1);
+      color: rgba(0, 0, 0, 0.54);
+      font-size: 14px;
+    }
+
+    .punctuation.string {
+      color: rgba(0, 136, 0, 1);
+    }
+
+    .separator {
+      margin: 0 8px;
+    }
+
+    .gap-fill {
+      width: 4px;
+      display: inline-block;
+    }
+
+    .string-input {
+      --paper-input-container-input: {
+        color: #080;
+      }
+    }
+
+    .numeric-input {
+      --paper-input-container-input: {
+        color: #303F9F;
+      }
+    }
+
+    .boolean-input {
+      --paper-input-container-input: {
+        color: #4A148C;
+      }
+    }
+
+    .null-input {
+      color: #4A148C;
+    }
+
+    paper-menu-button {
+      padding: 0;
+    }
+
+    .description {
+      @apply(--paper-font-caption);
+      color: rgba(0, 0, 0, 0.54);
+    }
+
+    .prop-key {
+      @apply(--layout-horizontal);
+    }
+    </style>
+    <div class$="[[_computeKeyLineClass(isObject, changingType)]]">
+      <div hidden$="[[noKey]]" class="prop-key">
+        <paper-input id="keyInput" label="key name" class="key-input" no-label-float value="{{value.name}}"></paper-input>
+        <span class="punctuation separator">:</span>
+        <template is="dom-if" if="[[isObject]]">
+          <paper-menu-button>
+            <paper-icon-button icon="arc:more-vert" class="dropdown-trigger"></paper-icon-button>
+            <paper-menu class="dropdown-content" on-iron-select="_valueMenuItemSelected">
+              <paper-item data-action="type-change">Change type</paper-item>
+              <paper-item data-action="delete">Delete</paper-item>
+              <!-- <paper-item data-action="insert-variable">Insert variable</paper-item> -->
+            </paper-menu>
+          </paper-menu-button>
+          <paper-icon-button icon="arc:remove-circle-outline" on-tap="_remove"></paper-icon-button>
+        </template>
+        <paper-autocomplete id="keySuggestions" target="[[keyInput]]" source="[[keySuggestionsList]]" on-selected="_onSuggestion" open-on-focus></paper-autocomplete>
+      </div>
+      <div class="value-part" hidden$="[[changingType]]">
+        <template is="dom-if" if="[[isObject]]">
+          <div hidden$="[[!noKey]]" class="punctuation">{</div>
+          <div class="indention">
+            <template is="dom-repeat" items="[[childrenObjects]]" object-repeater>
+              <object-editor schema="[[schema]]" value="{{item}}" on-remove-value="_deepRemove"></object-editor>
+            </template>
+            <div class="add-action">
+              <paper-button class="action-button" on-tap="_insertObject">add</paper-button>
+            </div>
+          </div>
+          <div class="punctuation">}</div>
+        </template>
+        <template is="dom-if" if="[[isString]]">
+          <paper-input label="value" class="string-input" no-label-float value="{{value.value.value}}" type="string"></paper-input>
+        </template>
+        <template is="dom-if" if="[[isInteger]]">
+          <paper-input label="value" class="numeric-input" no-label-float value="{{value.value.value}}" type="number" step="1"></paper-input>
+        </template>
+        <template is="dom-if" if="[[isFloat]]">
+          <paper-input label="value" class="numeric-input" no-label-float value="{{value.value.value}}" type="number" step="0.01"></paper-input>
+        </template>
+        <template is="dom-if" if="[[isBoolean]]">
+          <paper-dropdown-menu class="boolean-input" no-label-float label="Boolean value">
+            <paper-listbox class="dropdown-content" selected="{{value.value.value}}" attr-for-selected="data-value">
+              <template is="dom-repeat" items="[[booleanValues]]">
+                <paper-item data-value="[[item.value]]">[[item.display]]</paper-item>
+              </template>
+            </paper-listbox>
+          </paper-dropdown-menu>
+        </template>
+        <template is="dom-if" if="[[isNull]]">
+          <span class="null-input">null</span>
+        </template>
+        <template is="dom-if" if="[[isArray]]">
+          <span class="null-input"><i>not yet supported</i></span>
+        </template>
+        <template is="dom-if" if="[[!isObject]]">
+          <paper-menu-button>
+            <paper-icon-button icon="arc:more-vert" class="dropdown-trigger"></paper-icon-button>
+            <paper-menu class="dropdown-content" on-iron-select="_valueMenuItemSelected">
+              <paper-item data-action="type-change">Change type</paper-item>
+              <paper-item data-action="delete">Delete</paper-item>
+              <!-- <paper-item data-action="insert-variable">Insert variable</paper-item> -->
+            </paper-menu>
+          </paper-menu-button>
+          <paper-icon-button icon="arc:remove-circle-outline" on-tap="_remove"></paper-icon-button>
+        </template>
+        <div class="description">[[description]]</div>
+      </div>
+      <div class="value-part" hidden$="[[!changingType]]">
+        <span class="gap-fill"></span>
+        <paper-dropdown-menu no-label-float label="Select type">
+          <paper-listbox class="dropdown-content" selected="[[value.value.type]]" attr-for-selected="data-type" on-iron-select="_typeSelected">
+            <template is="dom-repeat" items="[[typesValues]]">
+              <paper-item data-type$="[[item.value]]">[[item.display]]</paper-item>
+            </template>
+          </paper-listbox>
+        </paper-dropdown-menu>
+        <paper-icon-button icon="arc:cancel" on-tap="_cancelTypeChange" title="Cancel"></paper-icon-button>
+      </div>
+    </div>
+  </template>
+  <script>
+  Polymer({
+    is: 'object-editor',
+
+    properties: {
+      // If true this element should not show a key field.
+      noKey: {
+        type: Boolean
+      },
+
+      value: {
+        type: Object,
+        value: function() {
+          return {};
+        },
+        notify: true
+      },
+
+      childrenObjects: {
+        type: Array,
+        value: [],
+        notify: true
+      },
+
+      isObject: Boolean,
+      isArray: Boolean,
+      isString: Boolean,
+      isInteger: Boolean,
+      isFloat: Boolean,
+      isBoolean: Boolean,
+      isNull: Boolean,
+
+      booleanValues: {
+        type: Array,
+        value: function() {
+          return [{
+            display: 'True',
+            value: true
+          }, {
+            display: 'False',
+            value: false
+          }];
+        },
+        readOnly: true
+      },
+      typesValues: {
+        type: Array,
+        value: function() {
+          return [{
+            display: 'String',
+            value: 'string'
+          }, {
+            display: 'Float',
+            value: 'float'
+          }, {
+            display: 'Integer',
+            value: 'integer'
+          }, {
+            display: 'Boolean',
+            value: 'boolean'
+          }, {
+            display: 'Null',
+            value: 'null'
+          }, {
+            display: 'Object',
+            value: 'object'
+          }, {
+            display: 'Array',
+            value: 'array'
+          }];
+        },
+        readOnly: true
+      },
+
+      changingType: {
+        type: Boolean,
+        value: false
+      },
+
+      keyInput: {
+        type: HTMLElement,
+        value: function() {
+          return this.$.keyInput;
+        }
+      },
+      keySuggestionsList: {
+        type: Array,
+      },
+
+      schema: Object,
+      // The description of the value of the field.
+      description: String
+    },
+
+    observers: [
+      '_valueChanged(value.*)',
+      '_countChildren(value.children.length)',
+      '_countChildren(value.value.children.length)',
+      '_schemaChanged(schema.*)'
+    ],
+
+    _valueChanged: function(record) {
+      if (record && record.path && record.path === 'value.value.value') {
+        return;
+      }
+      var v = this.value;
+      // console.log('Value changed', v);
+      this.isObject = false;
+      this.isArray = false;
+      this.isString = false;
+      this.isInteger = false;
+      this.isFloat = false;
+      this.isBoolean = false;
+      this.isNull = false;
+      var type = v.type || v.value.type;
+      if (!type) {
+        this.changingType = true;
+        return;
+      }
+
+      switch (type) {
+        case 'object':
+          this.isObject = true;
+          break;
+        case 'array':
+          this.isArray = true;
+          break;
+        case 'string':
+          this.isString = true;
+          break;
+        case 'float':
+          this.isFloat = true;
+          break;
+        case 'integer':
+          this.isInteger = true;
+          break;
+        case 'boolean':
+          this.isBoolean = true;
+          break;
+        case 'null':
+          this.isNull = true;
+          break;
+      }
+    },
+
+    _countChildren: function() {
+      // console.log('Children count changed');
+      var v = this.value;
+      this.set('childrenObjects', v.children || v.value.children);
+    },
+
+    _remove: function() {
+      this.fire('remove-value', {
+        value: this.value
+      });
+    },
+
+    _deepRemove: function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      e.stopPropagation();
+      // debugger;
+      var rm = e.detail.value;
+      /// this.value.value.children[0] === e.detail.value
+      var children = this.value.children || this.value.value.children;
+      for (let i = 0, len = children.length; i < len; i++) {
+        if (children[i] === rm) {
+          if ('value' in this.value) {
+            this.splice('value.value.children', i, 1);
+          } else {
+            this.splice('value.children', i, 1);
+          }
+          Polymer.dom(this.root).querySelector('[object-repeater]').render();
+          break;
+        }
+      }
+      // console.log('Remove deeply', e);
+    },
+
+    _insertObject: function() {
+      // console.log('_insertObject', this.value);
+      var obj = {
+        'name': '',
+        'value': {
+          value: ''
+        }
+      };
+      if ('value' in this.value) {
+        if (!this.value.value.children || !this.value.value.children.length) {
+          this.value.value.children = [];
+        }
+        this.push('value.value.children', obj);
+      } else {
+        if (!this.value.children || !this.value.children.length) {
+          this.value.children = [];
+        }
+        this.push('value.children', obj);
+      }
+      Polymer.dom(this.root).querySelector('[object-repeater]').render();
+    },
+
+    _computeKeyLineClass: function(isObject, changingType) {
+      var clazz = 'key-line';
+      if (isObject && !changingType) {
+        clazz += ' objectable';
+      }
+      return clazz;
+    },
+
+    _valueMenuItemSelected: function(e) {
+      // console.log('_valueMenuItemSelected', e, Polymer.dom(e));
+      switch (e.detail.item.dataset.action) {
+        case 'type-change':
+          this.changingType = true;
+          break;
+        case 'delete':
+          this._remove(e);
+          break;
+      }
+      var target = Polymer.dom(e).rootTarget;
+      target.selected = -1;
+    },
+
+    _cancelTypeChange: function() {
+      this.changingType = false;
+    },
+
+    _typeSelected: function(e) {
+      if (!this.changingType) {
+        return;
+      }
+      this.changingType = false;
+      var type = e.detail.item.dataset.type;
+      this.set('value.type', type);
+    },
+
+    _render: function() {
+      var elm = Polymer.dom(this.root).querySelector('[object-repeater]');
+      if (elm) {
+        elm.render();
+      }
+    },
+
+    _schemaChanged: function() {
+      var s = this.schema;
+      if (!s || !s.properties) {
+        this.keySuggestionsList = [];
+        return;
+      }
+      var suggestions = Object.getOwnPropertyNames(s.properties);
+      if (!suggestions.length) {
+        return;
+      }
+      // console.log('setting keySuggestionsList', suggestions);
+      this.set('keySuggestionsList', suggestions);
+    },
+
+    _onSuggestion: function(e) {
+      var key = e.detail.value;
+      var p = this.schema.properties;
+      if (!(key in p)) {
+        return;
+      }
+      var prop = p[key];
+      var type = prop.type;
+      if (type) {
+        this.set('value.value.type', type);
+      }
+      if (prop.description) {
+        this.description = prop.description;
+      } else {
+        this.description = undefined;
+      }
+      console.log('_onSuggestion', p[key]);
+    }
+  });
+  </script>
+</dom-module>
