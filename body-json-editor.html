@@ -12,6 +12,7 @@ License for the specific language governing permissions and limitations under
 the License.
 -->
 <link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="object-editor.html">
 
 <!--
@@ -39,19 +40,27 @@ Custom property | Description | Default
      :host {
       display: block;
     }
+    .action-button {
+      color: var(--primary-color);
+    }
     </style>
     <template is="dom-if" if="[[_isObject(model.type)]]">
       <object-editor no-key value="{{model}}" schema="[[schema]]"></object-editor>
     </template>
     <template is="dom-if" if="[[_isArray(model.type)]]">
-      <p>TODO</p>
+      <template is="dom-repeat" items="{{model.children}}">
+        <object-editor no-key value="{{item}}" schema="[[schema]]"></object-editor>
+      </template>
+      <div class="add-action">
+        <paper-button class="action-button" on-tap="_insertArrayObject">add</paper-button>
+      </div>
     </template>
   </template>
   <script>
   Polymer({
     is: 'body-json-editor',
     properties: {
-      // A JSON object
+      // A JSON object. Please, use the `value` property to set / get JSON
       json: {
         type: Object,
         value: function() {
@@ -62,11 +71,18 @@ Custom property | Description | Default
       // Generated model.
       model: Object,
       // Schema for autocomplete.
-      schema: Object
+      schema: Object,
+      // gets / sets JSON string value
+      value: {
+        type: String,
+        notify: true
+      }
     },
+
     observers: [
       '_jsonChanged(json)',
-      '_modelChanged(model.*)'
+      '_modelChanged(model.*)',
+      '_valueChanged(value)'
     ],
 
     _jsonChanged: function(json) {
@@ -87,6 +103,13 @@ Custom property | Description | Default
         obj.forEach((item) => {
           result.children.push(this._translate(item));
         });
+        result.children = result.children.map(function(item) {
+          item.value = {
+            type: item.type,
+            value: item.value
+          };
+          return item;
+        });
       } else if (typeof obj === 'string') {
         result.type = 'string';
         result.value = obj;
@@ -101,15 +124,19 @@ Custom property | Description | Default
         result.value = null;
       } else {
         result.children = [];
-        let keys = Object.getOwnPropertyNames(obj);
-        keys.forEach((key) => {
-          let item = {
-            'name': key,
-            'value': this._translate(obj[key])
-          };
-          item.type = item.value.type;
-          result.children.push(item);
-        });
+        try {
+          let keys = Object.keys(obj);
+          keys.forEach((key) => {
+            let item = {
+              'name': key,
+              'value': this._translate(obj[key])
+            };
+            item.type = item.value.type;
+            result.children.push(item);
+          });
+        } catch (e) {
+          console.warn(e);
+        }
       }
       return result;
     },
@@ -123,7 +150,64 @@ Custom property | Description | Default
     },
 
     _modelChanged: function(record) {
-      console.log(record);
+      // console.log('_modelChanged');
+      var obj = record.base;
+      obj = this._computeJson(obj);
+      this._internallValueChage = true;
+      this.set('value', JSON.stringify(obj, null, 2));
+      this._internallValueChage = false;
+    },
+
+    _computeJson: function(model) {
+      var isArray = model.type === 'array';
+      var result = isArray ? [] : {};
+
+      if (!model.children || !model.children.length) {
+        return result;
+      }
+      var self = this;
+      model.children.forEach(function(item) {
+        var _value;
+        if (item.type === 'object' || item.type === 'array') {
+          _value = self._computeJson(item.value);
+        } else {
+          _value = item.value.value;
+          if (['integer', 'float'].indexOf(item.type) !== -1) {
+            _value = Number(_value);
+            if (_value !== _value) {
+              _value = item.value.value;
+            }
+          }
+        }
+        if (isArray) {
+          result[result.length] = _value;
+        } else {
+          result[item.name] = _value;
+        }
+      });
+
+      return result;
+    },
+
+    _insertArrayObject: function() {
+      var obj = {
+        'value': {
+          value: ''
+        }
+      };
+      this.push('model.children', obj);
+    },
+
+    _valueChanged: function(value) {
+      if (this._internallValueChage) {
+        return;
+      }
+      try {
+        var json = JSON.parse(value);
+        this.set('json', json);
+      } catch (e) {
+        console.warn(e);
+      }
     }
   });
   </script>

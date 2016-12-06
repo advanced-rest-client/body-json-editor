@@ -29,6 +29,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       max-width: 600px;
     }
 
+    output {
+      display: block;
+      white-space: pre-wrap;
+    }
+
   </style>
 </head>
 <body unresolved>
@@ -37,6 +42,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <arc-demo-snippet json='{"test": "value", "numeric": 1234, "float": 1234.5678, "boolean": true, "nullable": null, "empty":""}'>
       <template>
         <body-json-editor json="[[json]]"></body-json-editor>
+        <output></output>
+        <script>
+        var json = document.querySelectorAll('body-json-editor')[0];
+        json.addEventListener('value-changed', function(e) {
+          document.querySelectorAll('output')[0].innerHTML = e.detail.value;
+        });
+        </script>
       </template>
     </arc-demo-snippet>
 
@@ -44,6 +56,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <arc-demo-snippet json='["test", 123, 1234.5678, true]'>
       <template>
         <body-json-editor json="[[json]]"></body-json-editor>
+        <output></output>
+        <script>
+        var json = document.querySelectorAll('body-json-editor')[1];
+        json.addEventListener('value-changed', function(e) {
+          document.querySelectorAll('output')[1].innerHTML = e.detail.value;
+        });
+        </script>
       </template>
     </arc-demo-snippet>
   </div>
