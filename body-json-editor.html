@@ -68,18 +68,18 @@ Custom property | Description | Default
     </style>
     <template is="dom-if" if="[[_isObject(model.type)]]">
       <template is="dom-repeat" items="{{model.properties}}" id="object">
-        <object-editor value="{{item}}" schema="[[schema]]"></object-editor>
+        <object-editor narrow="[[narrow]]" value="{{item}}" schema="[[schema]]"></object-editor>
       </template>
       <div class="add-action">
-        <paper-button class="action-button" on-tap="_appendProperty">add</paper-button>
+        <paper-button class="action-button" on-tap="_appendProperty">add property</paper-button>
       </div>
     </template>
     <template is="dom-if" if="[[_isArray(model.type)]]">
       <template is="dom-repeat" items="{{model.items}}" id="array">
-        <object-editor no-key value="{{item}}" schema="[[schema]]"></object-editor>
+        <object-editor narrow="[[narrow]]" no-key value="{{item}}" schema="[[schema]]"></object-editor>
       </template>
       <div class="add-action">
-        <paper-button class="action-button" on-tap="_appendProperty">add</paper-button>
+        <paper-button class="action-button" on-tap="_appendProperty">add array item</paper-button>
       </div>
     </template>
   </template>
@@ -168,7 +168,7 @@ Custom property | Description | Default
       value: {
         type: String,
         notify: true,
-        value: '{\n\t\n}'
+        value: ''
       },
       /**
        * Determines if the editor is currently displayed in the UI and relevant to the user.
@@ -190,6 +190,12 @@ Custom property | Description | Default
 
     listeners: {
       'remove-property': '_onRemoveProperty'
+    },
+
+    ready: function() {
+      if (!this.json) {
+        this.json = {};
+      }
     },
 
     _jsonChanged: function(opened, json) {
@@ -222,12 +228,13 @@ Custom property | Description | Default
      * @return {Object|undefined} A model of undefined if passed object is nullable.
      */
     _createModel: function(object, parentType) {
-      if (object === undefined) {
-        return;
-      }
       var result = {
         type: 'object'
       };
+      if (object === undefined) {
+        return result;
+      }
+
       if (parentType && parentType !== 'array') {
         result.name = '';
       }

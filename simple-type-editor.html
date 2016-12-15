@@ -15,11 +15,11 @@ the License.
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-styles/typography.html">
 <link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
-<link rel="import" href="../paper-menu-button/paper-menu-button.html">
+<!-- <link rel="import" href="../paper-menu-button/paper-menu-button.html"> -->
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
-<link rel="import" href="../paper-menu/paper-menu.html">
+<!-- <link rel="import" href="../paper-menu/paper-menu.html"> -->
 <link rel="import" href="../paper-autocomplete/paper-autocomplete.html">
 <link rel="import" href="../arc-icons/arc-icons.html">
 <link rel="import" href="../marked-element/marked-element.html">
@@ -133,23 +133,50 @@ Custom property | Description | Default
       @apply(--code-block);
     }
 
+    .type-selector {
+      @apply(--layout-horizontal);
+    }
+
+    :host([narrow]) #container {
+      margin-bottom: 24px;
+    }
+
+    :host([narrow]) .input-values {
+      @apply(--layout-vertical);
+      @apply(--layout-start);
+    }
+
+    :host([narrow]) .input-actions {
+      @apply(--layout-start);
+      padding-top: 16px;
+    }
+
+    :host([narrow]) .punctuation {
+      display: none;
+    }
+
     </style>
     <div id="container">
       <div class="input-values">
-
-        <paper-input id="keyInput" hidden$="[[noKey]]" label="property name" class="key-input" no-label-float value="{{value.name}}"></paper-input>
+        <paper-input id="keyInput" hidden$="[[noKey]]" label="property name" class="key-input" no-label-float="[[!narrow]]" value="{{value.name}}"></paper-input>
         <paper-autocomplete target="[[keyInput]]" source="[[nameSuggestions]]" on-selected="_onSuggestion" open-on-focus vertical-align="top"></paper-autocomplete>
-
         <span class="punctuation" hidden$="[[noKey]]">:</span>
-
         <template is="dom-if" if="[[!_typeIs(value.type, 'array', 'object')]]" restamp="true">
           <!-- String / number types -->
           <template is="dom-if" if="[[_typeIs(value.type, 'number', 'float', 'integer', 'string')]]" restamp="true">
-            <paper-input label="property value" class="value-input" no-label-float value="{{value.value}}" type$="[[_compueInputType(value.type)]]" step="[[_computeStep(value.type)]]"></paper-input>
+            <paper-input
+              label="property value"
+              class="value-input"
+              no-label-float="[[!narrow]]"
+              auto-validate
+              required="[[value.required]]"
+              value="{{value.value}}"
+              type$="[[_compueInputType(value.type)]]"
+              step="[[_computeStep(value.type)]]"></paper-input>
           </template>
           <!-- Boolean type -->
           <template is="dom-if" if="[[_typeIs(value.type, 'boolean')]]" restamp="true">
-            <paper-dropdown-menu class="boolean-input" no-label-float label="Boolean value">
+            <paper-dropdown-menu class="boolean-input" no-label-float="[[!narrow]]" label="Boolean value">
               <paper-listbox class="dropdown-content" selected="{{value.value}}" attr-for-selected="data-value">
                 <template is="dom-repeat" items="{{booleanValues}}">
                   <paper-item data-value="[[item.value]]">[[item.display]]</paper-item>
@@ -168,25 +195,28 @@ Custom property | Description | Default
 
         <!-- Type change combobox -->
         <template is="dom-if" if="[[_typeIs(value.type, '')]]" restamp="true">
-          <paper-dropdown-menu no-label-float label="Select type">
-            <paper-listbox class="dropdown-content" selected="{{value.type}}" attr-for-selected="data-type">
-              <template is="dom-repeat" items="{{typesValues}}">
-                <paper-item data-type$="[[item.value]]">[[item.display]]</paper-item>
-              </template>
-            </paper-listbox>
-          </paper-dropdown-menu>
-          <paper-icon-button hidden$="[[!_previousType]]" icon="arc:cancel" on-tap="_cancelTypeChange" title="Cancel"></paper-icon-button>
+          <div class="type-selector">
+            <paper-dropdown-menu no-label-float label="Select type">
+              <paper-listbox class="dropdown-content" selected="{{value.type}}" attr-for-selected="data-type">
+                <template is="dom-repeat" items="{{_computeTypesList(typesValues, allowedTypes)}}">
+                  <paper-item data-type$="[[item.value]]">[[item.display]]</paper-item>
+                </template>
+              </paper-listbox>
+            </paper-dropdown-menu>
+            <paper-icon-button hidden$="[[!_previousType]]" icon="arc:cancel" on-tap="_cancelTypeChange" title="Cancel"></paper-icon-button>
+          </div>
         </template>
       </div>
       <div class="input-actions" hidden$="[[_typeIs(value.type, '')]]">
-        <paper-menu-button>
+        <!-- <paper-menu-button>
           <paper-icon-button icon="arc:more-vert" class="dropdown-trigger"></paper-icon-button>
           <paper-menu class="dropdown-content" on-iron-select="_contextMenuItemSelected">
             <paper-item data-action="type-change">Change type</paper-item>
             <paper-item data-action="delete">Delete</paper-item>
           </paper-menu>
-        </paper-menu-button>
-        <paper-icon-button icon="arc:remove-circle-outline" on-tap="_remove"></paper-icon-button>
+        </paper-menu-button> -->
+        <paper-icon-button icon="arc:arc:refresh" on-tap="_changeType" title="Change data type"></paper-icon-button>
+        <paper-icon-button icon="arc:remove-circle-outline" on-tap="_remove" title="Remove property"></paper-icon-button>
       </div>
     </div>
     <div id="docs" hidden$="[[!description]]">
@@ -256,8 +286,19 @@ Custom property | Description | Default
           value: function() {
             return this.$.keyInput;
           }
+        },
+        // List of allowed types
+        allowedTypes: {
+          type: Array,
+          value: []
+        },
+        narrow: {
+          type: Boolean,
+          value: false
         }
       },
+
+      observers: ['_descriptionChanged(value.description)'],
 
       // Computes the input type for given type.
       _compueInputType: function(type) {
@@ -276,27 +317,26 @@ Custom property | Description | Default
         switch (type) {
           case 'number':
           case 'float':
-            return 0.01;
+            return 0.0000001;
           case 'integer':
             return 1;
           default:
             return;
         }
       },
-      // A handler for the item's context menu
-      _contextMenuItemSelected: function(e) {
-        switch (e.detail.item.dataset.action) {
-          case 'type-change':
-            this._previousType = this.value.type;
-            this.set('value.type', '');
-            break;
-          case 'delete':
-            this._remove();
-            break;
-        }
-        var target = Polymer.dom(e).rootTarget;
-        target.selected = -1;
-      },
+      // // A handler for the item's context menu
+      // _contextMenuItemSelected: function(e) {
+      //   switch (e.detail.item.dataset.action) {
+      //     case 'type-change':
+      //       this._changeType();
+      //       break;
+      //     case 'delete':
+      //       this._remove();
+      //       break;
+      //   }
+      //   var target = Polymer.dom(e).rootTarget;
+      //   target.selected = -1;
+      // },
       // Send an event to the parent element (which must represent object or array) to remove the
       // propety.
       _remove: function() {
@@ -304,9 +344,37 @@ Custom property | Description | Default
           value: this.value
         });
       },
+
+      _changeType: function() {
+        this._previousType = this.value.type;
+        this.set('value.type', '');
+      },
+
       // Cancels the type change and sets previous value.
       _cancelTypeChange: function() {
         this.set('value.type', this._previousType);
+      },
+
+      // The description is set when the suggestion is selected. But the `value` can also contain
+      // a description when the property of object (this value) was pre-filled.
+      _descriptionChanged: function(description) {
+        if (!description) {
+          return;
+        }
+        this.description = description;
+      },
+
+      _computeTypesList: function(typesValues, allowedTypes) {
+        if (!allowedTypes || !allowedTypes.length) {
+          return typesValues;
+        }
+        var result = allowedTypes.map(function(item) {
+          return {
+            display: item,
+            value: item
+          };
+        });
+        return result;
       }
 
     });

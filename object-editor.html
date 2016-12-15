@@ -67,23 +67,23 @@ Custom property | Description | Default
     <template is="dom-if" if="[[_typeIs(value.type, 'object')]]">
       <simple-type-editor value="{{value}}"></simple-type-editor>
       <template is="dom-repeat" items="{{value.properties}}" id="object">
-        <object-editor class="indent" value="{{item}}" schema="[[subPropertySchema]]"></object-editor>
+        <object-editor narrow="[[narrow]]" class="indent" value="{{item}}" schema="[[subPropertySchema]]"></object-editor>
       </template>
       <div class="indent add-action">
-        <paper-button class="action-button" on-tap="_appendProperty">add</paper-button>
+        <paper-button class="action-button" on-tap="_appendProperty">add subproperty</paper-button>
       </div>
     </template>
     <template is="dom-if" if="[[_typeIs(value.type, 'array')]]">
       <simple-type-editor value="{{value}}"></simple-type-editor>
       <template is="dom-repeat" items="{{value.items}}" id="array">
-        <object-editor class="indent" no-key value="{{item}}" schema="[[schema]]"></object-editor>
+        <object-editor narrow="[[narrow]]" class="indent" no-key value="{{item}}" schema="[[subPropertySchema]]" is-array-item allowed-types="[[allowedTypes]]"></object-editor>
       </template>
       <div class="indent add-action">
-        <paper-button class="action-button" on-tap="_appendProperty">add</paper-button>
+        <paper-button class="action-button" on-tap="_appendProperty">add array item</paper-button>
       </div>
     </template>
     <template is="dom-if" if="[[!_typeIs(value.type, 'array', 'object')]]">
-      <simple-type-editor value="{{value}}" no-key="[[noKey]]" schema="[[schema]]"></simple-type-editor>
+      <simple-type-editor narrow="[[narrow]]" value="{{value}}" no-key="[[noKey]]" schema="[[schema]]" allowed-types="[[allowedTypes]]"></simple-type-editor>
     </template>
   </template>
   <script>
@@ -99,11 +99,17 @@ Custom property | Description | Default
       value: {
         type: Object,
         notify: true
+      },
+      // If set, means that this object is a sub-property of an array.
+      isArrayItem: {
+        type: Boolean,
+        value: false
       }
     },
 
     observers: [
-      '_schemaChanged(schema.*)'
+      '_schemaChanged(schema.*)',
+      '_computeChildTypes(isArrayItem, schema.*)'
     ],
 
     listeners: {
@@ -161,7 +167,7 @@ Custom property | Description | Default
           this.set('value.properties', [property]);
         }
       } else {
-        if (this.value.items) {
+        if (this.value.items && this.value.items.length) {
           // set new item's type to the same as the last item
           var type = this.value.items[this.value.items.length - 1].type;
           property.type = type;
@@ -170,6 +176,28 @@ Custom property | Description | Default
           this.set('value.items', [property]);
         }
       }
+    },
+
+    _computeChildTypes: function(isArray, record) {
+      if (!isArray) {
+        return;
+      }
+      var s = record.base;
+      if (!s || !s.length) {
+        this.set('allowedTypes', null);
+        return;
+      }
+      var allowedTypes = [];
+      s.forEach(function(item) {
+        if (!item.type) {
+          return;
+        }
+        if (allowedTypes.indexOf(item.type) !== -1) {
+          return;
+        }
+        allowedTypes[allowedTypes.length] = item.type;
+      });
+      this.set('allowedTypes', allowedTypes);
     }
   });
   </script>

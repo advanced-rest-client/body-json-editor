@@ -44,7 +44,24 @@ the License.
       },
       // A description for given property. It will be set automatically if name exists in the
       // schema and it has the `description` propery.
-      description: String
+      description: String,
+      /**
+       * List of allowed types that the `simple-type-editor` can show in type selector (or just
+       * the user can choose from the types list).
+       * This value will be computed if the `schema` is set and will limit array items' types.
+       *
+       * Keep in mind to keep some value othen than `undefined` on this property or the types
+       * list won't be calculated at all.
+       */
+      allowedTypes: {
+        type: Array,
+        // value: null
+      },
+      // Display form in the narrow layout
+      narrow: {
+        type: Boolean,
+        reflectToAttribute: true
+      }
     },
 
     observers: [
@@ -116,6 +133,12 @@ the License.
           type = '';
         }
         this.set('value.type', type);
+        if (type === 'object') {
+          this._fillDefaultChildren(property);
+        } else if (type === 'array') {
+          this._fillDefaultArrayChildren(property);
+          // this._setAllowedArrayTypes(property);
+        }
       }
       if (property.description) {
         this.description = property.description;
@@ -189,11 +212,88 @@ the License.
         });
         properties = result;
       } else if (object.type === 'array') {
-        console.warn('Support arrays <3');
+        // console.warn('Support arrays <3');
         // debugger;
+        properties = object.items;
       }
       return properties;
-    }
+    },
+    /**
+     * When type change and there's a schema and the object is of type Object then it will
+     * update object's child properties automatically.
+     *
+     * @param {Object} property Schema property. It's `properties` object contains a definition
+     * of children.
+     */
+    _fillDefaultChildren: function(property) {
+      if (!property || !property.properties || !property.properties.length) {
+        return;
+      }
+      var properties = property.properties;
+      if (!this.value.properties) {
+        this.set('value.properties', []);
+      }
+
+      properties.forEach(function(property) {
+        if (!property.key && !property.name) {
+          return;
+        }
+        var item = Object.assign({}, property);
+        if (!item.name && property.key) {
+          item.name = property.key;
+        }
+        if (!item.key && property.name) {
+          item.key = property.name;
+        }
+        this.push('value.properties', item);
+      }, this);
+    },
+    /**
+     * Sets the child properties on the array type object.
+     * Similar to `_fillDefaultChildren()` but for arrays.
+     *
+     * @param {Object} property Schema property. It's `items` object contains a definition
+     * of children.
+     */
+    _fillDefaultArrayChildren: function(property) {
+      if (!property || !property.items || !property.items.length) {
+        return;
+      }
+      var properties = property.items;
+      if (!this.value.items) {
+        this.set('value.items', []);
+      }
+      properties.forEach(function(property) {
+        var item = Object.assign({}, property);
+        this.push('value.items', item);
+      }, this);
+    },
+    // /**
+    //  * Extracts child types of the array and sets the `allowedTypes` property on this element
+    //  * that is passed to the child object preventing them to display full type selector.
+    //  * The type selector will be limited to the ones computed by this function.
+    //  *
+    //  * @param {Object} property Schema property. It's `items` object contains a definition
+    //  * of children.
+    //  */
+    // _setAllowedArrayTypes: function(property) {
+    //   var allowedTypes = [];
+    //   if (!property || !property.items || !property.items.length) {
+    //     this.set('allowedTypes', allowedTypes);
+    //     return;
+    //   }
+    //   var properties = property.items;
+    //   properties.forEach(function(item) {
+    //     if (!item.type) {
+    //       return;
+    //     }
+    //     if (allowedTypes.indexOf(item.type) !== -1) {
+    //       return;
+    //     }
+    //     allowedTypes[allowedTypes.length] = item.type;
+    //   });
+    //   this.set('allowedTypes', allowedTypes);
+    // }
   };
 })(window);
 </script>
