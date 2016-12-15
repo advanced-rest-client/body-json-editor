@@ -14,29 +14,26 @@ the License.
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout.html">
 <link rel="import" href="../paper-styles/paper-styles.html">
-<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../paper-menu-button/paper-menu-button.html">
-<link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../paper-menu/paper-menu.html">
-<link rel="import" href="../paper-autocomplete/paper-autocomplete.html">
 <link rel="import" href="../arc-icons/arc-icons.html">
+<link rel="import" href="simple-type-editor.html">
+<link rel="import" href="body-json-editor-behavior.html">
 <!--
-`<body-json-editor>` A JSON editor for HTTP body
-
-### Example
-```
-<body-json-editor></body-json-editor>
-```
+`<object-editor>` Is a part of the `body-json-editor`. This element is used to recursively
+display a JSON object editor.
 
 ### Styling
-`<body-json-editor>` provides the following custom properties and mixins for styling:
+`<object-editor>` provides the following custom properties and mixins for styling:
 
 Custom property | Description | Default
 ----------------|-------------|----------
-`--body-json-editor` | Mixin applied to the element | `{}`
+`--body-json-object-editor` | Mixin applied to the element. Note that because of the recurcy this element contains the same element. So setting padding / margin on this element is basically bad idea. | `{}`,
+`--paper-dropdown-menu-input` | Mixin applied to the dropdown menu input. | `{color: #673AB7;}`
+`--paper-dropdown-menu-button` | Mixin applied to the dropdown menu button. | `{color: #673AB7;}`
+`--primary-color` | Color of the action button | ``
 
 @group UI Elements
 @element object-editor
@@ -47,479 +44,132 @@ Custom property | Description | Default
     <style>
      :host {
       display: block;
+
+      @apply(--body-json-object-editor);
       --paper-input-container-color: rgba(0, 0, 0, 0.24);
       --paper-dropdown-menu-input: {
         color: #673AB7;
-        /*background-color: #673AB7;*/
       }
       --paper-dropdown-menu-button: {
         color: #673AB7;
-        /*background-color: #673AB7;*/
       }
     }
 
-    paper-input {
-      display: inline-block;
-    }
-
-    paper-icon-button {
-      width: 32px;
-      height: 32px;
-    }
-
-    .indention {
+    .indent {
       margin-left: 12px;
-    }
-
-    .key-line {
-      @apply(--layout-horizontal);
-    }
-
-    .key-line.objectable {
-      @apply(--layout-vertical);
-    }
-
-    .key-input {
-      color: rgba(0, 0, 0, 0.54);
-    }
-
-    .value-part {
-      @apply(--layout-flex);
     }
 
     .action-button {
       color: var(--primary-color);
     }
 
-    .punctuation {
-      @apply(--paper-font-body1);
-      color: rgba(0, 0, 0, 0.54);
-      font-size: 14px;
-    }
-
-    .punctuation.string {
-      color: rgba(0, 136, 0, 1);
-    }
-
-    .separator {
-      margin: 0 8px;
-    }
-
-    .gap-fill {
-      width: 4px;
-      display: inline-block;
-    }
-
-    .string-input {
-      --paper-input-container-input: {
-        color: #080;
-      }
-    }
-
-    .numeric-input {
-      --paper-input-container-input: {
-        color: #303F9F;
-      }
-    }
-
-    .boolean-input {
-      --paper-input-container-input: {
-        color: #4A148C;
-      }
-    }
-
-    .null-input {
-      color: #4A148C;
-    }
-
-    paper-menu-button {
-      padding: 0;
-    }
-
-    .description {
-      @apply(--paper-font-caption);
-      color: rgba(0, 0, 0, 0.54);
-    }
-
-    .prop-key {
-      @apply(--layout-horizontal);
-    }
     </style>
-    <div class$="[[_computeKeyLineClass(isObject, changingType)]]">
-      <div hidden$="[[noKey]]" class="prop-key">
-        <paper-input id="keyInput" label="key name" class="key-input" no-label-float value="{{value.name}}"></paper-input>
-        <span class="punctuation separator">:</span>
-        <template is="dom-if" if="[[isObject]]">
-          <paper-menu-button>
-            <paper-icon-button icon="arc:more-vert" class="dropdown-trigger"></paper-icon-button>
-            <paper-menu class="dropdown-content" on-iron-select="_valueMenuItemSelected">
-              <paper-item data-action="type-change">Change type</paper-item>
-              <paper-item data-action="delete">Delete</paper-item>
-              <!-- <paper-item data-action="insert-variable">Insert variable</paper-item> -->
-            </paper-menu>
-          </paper-menu-button>
-          <paper-icon-button icon="arc:remove-circle-outline" on-tap="_remove"></paper-icon-button>
-        </template>
-        <paper-autocomplete id="keySuggestions" target="[[keyInput]]" source="[[keySuggestionsList]]" on-selected="_onSuggestion" open-on-focus></paper-autocomplete>
+    <template is="dom-if" if="[[_typeIs(value.type, 'object')]]">
+      <simple-type-editor value="{{value}}"></simple-type-editor>
+      <template is="dom-repeat" items="{{value.properties}}" id="object">
+        <object-editor class="indent" value="{{item}}" schema="[[subPropertySchema]]"></object-editor>
+      </template>
+      <div class="indent add-action">
+        <paper-button class="action-button" on-tap="_appendProperty">add</paper-button>
       </div>
-      <div class="value-part" hidden$="[[changingType]]">
-        <template is="dom-if" if="[[isObject]]">
-          <div hidden$="[[!noKey]]" class="punctuation">{</div>
-          <div class="indention">
-            <template is="dom-repeat" items="{{childrenObjects}}" object-repeater>
-              <object-editor schema="[[schema]]" value="{{item}}" on-remove-value="_deepRemove"></object-editor>
-            </template>
-            <div class="add-action">
-              <paper-button class="action-button" on-tap="_insertObject">add</paper-button>
-            </div>
-          </div>
-          <div class="punctuation">}</div>
-        </template>
-        <template is="dom-if" if="[[isString]]">
-          <paper-input label="value" class="string-input" no-label-float value="{{value.value.value}}" type="string"></paper-input>
-        </template>
-        <template is="dom-if" if="[[isInteger]]">
-          <paper-input label="value" class="numeric-input" no-label-float value="{{value.value.value}}" type="number" step="1"></paper-input>
-        </template>
-        <template is="dom-if" if="[[isFloat]]">
-          <paper-input label="value" class="numeric-input" no-label-float value="{{value.value.value}}" type="number" step="0.01"></paper-input>
-        </template>
-        <template is="dom-if" if="[[isBoolean]]">
-          <paper-dropdown-menu class="boolean-input" no-label-float label="Boolean value">
-            <paper-listbox class="dropdown-content" selected="{{value.value.value}}" attr-for-selected="data-value">
-              <template is="dom-repeat" items="{{booleanValues}}">
-                <paper-item data-value="[[item.value]]">[[item.display]]</paper-item>
-              </template>
-            </paper-listbox>
-          </paper-dropdown-menu>
-        </template>
-        <template is="dom-if" if="[[isNull]]">
-          <span class="null-input">null</span>
-        </template>
-        <template is="dom-if" if="[[isArray]]">
-          <span class="null-input"><i>not yet supported</i></span>
-        </template>
-        <template is="dom-if" if="[[!isObject]]">
-          <paper-menu-button>
-            <paper-icon-button icon="arc:more-vert" class="dropdown-trigger"></paper-icon-button>
-            <paper-menu class="dropdown-content" on-iron-select="_valueMenuItemSelected">
-              <paper-item data-action="type-change">Change type</paper-item>
-              <paper-item data-action="delete">Delete</paper-item>
-              <!-- <paper-item data-action="insert-variable">Insert variable</paper-item> -->
-            </paper-menu>
-          </paper-menu-button>
-          <paper-icon-button icon="arc:remove-circle-outline" on-tap="_remove"></paper-icon-button>
-        </template>
-        <div class="description">[[description]]</div>
+    </template>
+    <template is="dom-if" if="[[_typeIs(value.type, 'array')]]">
+      <simple-type-editor value="{{value}}"></simple-type-editor>
+      <template is="dom-repeat" items="{{value.items}}" id="array">
+        <object-editor class="indent" no-key value="{{item}}" schema="[[schema]]"></object-editor>
+      </template>
+      <div class="indent add-action">
+        <paper-button class="action-button" on-tap="_appendProperty">add</paper-button>
       </div>
-      <div class="value-part" hidden$="[[!changingType]]">
-        <span class="gap-fill"></span>
-        <paper-dropdown-menu no-label-float label="Select type">
-          <paper-listbox class="dropdown-content" selected="[[value.value.type]]" attr-for-selected="data-type" on-iron-select="_typeSelected">
-            <template is="dom-repeat" items="{{typesValues}}">
-              <paper-item data-type$="[[item.value]]">[[item.display]]</paper-item>
-            </template>
-          </paper-listbox>
-        </paper-dropdown-menu>
-        <paper-icon-button icon="arc:cancel" on-tap="_cancelTypeChange" title="Cancel"></paper-icon-button>
-      </div>
-    </div>
+    </template>
+    <template is="dom-if" if="[[!_typeIs(value.type, 'array', 'object')]]">
+      <simple-type-editor value="{{value}}" no-key="[[noKey]]" schema="[[schema]]"></simple-type-editor>
+    </template>
   </template>
   <script>
   Polymer({
     is: 'object-editor',
-
+    behaviors: [ArcBehaviors.BodyJsonEditorBehavior],
     properties: {
       // If true this element should not show a key field.
       noKey: {
         type: Boolean
       },
-
+      // The value of this editor.
       value: {
         type: Object,
-        value: function() {
-          return {};
-        },
         notify: true
-      },
-
-      childrenObjects: {
-        type: Array,
-        value: [],
-        notify: true
-      },
-
-      isObject: Boolean,
-      isArray: Boolean,
-      isString: Boolean,
-      isInteger: Boolean,
-      isFloat: Boolean,
-      isBoolean: Boolean,
-      isNull: Boolean,
-
-      booleanValues: {
-        type: Array,
-        value: function() {
-          return [{
-            display: 'True',
-            value: true
-          }, {
-            display: 'False',
-            value: false
-          }];
-        },
-        readOnly: true
-      },
-      typesValues: {
-        type: Array,
-        value: function() {
-          return [{
-            display: 'String',
-            value: 'string'
-          }, {
-            display: 'Float',
-            value: 'float'
-          }, {
-            display: 'Integer',
-            value: 'integer'
-          }, {
-            display: 'Boolean',
-            value: 'boolean'
-          }, {
-            display: 'Null',
-            value: 'null'
-          }, {
-            display: 'Object',
-            value: 'object'
-          }, {
-            display: 'Array',
-            value: 'array'
-          }];
-        },
-        readOnly: true
-      },
-
-      changingType: {
-        type: Boolean,
-        value: false
-      },
-
-      keyInput: {
-        type: HTMLElement,
-        value: function() {
-          return this.$.keyInput;
-        }
-      },
-      keySuggestionsList: {
-        type: Array,
-      },
-
-      schema: Object,
-      // The description of the value of the field.
-      description: String
+      }
     },
 
     observers: [
-      '_valueChanged(value.*)',
-      '_countChildren(value.children.length)',
-      '_countChildren(value.value.children.length)',
-      '_schemaChanged(schema.*)',
-      '_notifyValueChange(childrenObjects.*)'
+      '_schemaChanged(schema.*)'
     ],
 
-    _valueChanged: function(record) {
-      if (record && record.path && record.path === 'value.value.value') {
+    listeners: {
+      'remove-property': '_onRemoveProperty'
+    },
+
+    /**
+     * Removes the property from this object.
+     */
+    _onRemoveProperty: function(e) {
+      var value = this.value;
+      if (!value) {
         return;
       }
-      var v = this.value;
-      // console.log('Value changed', v);
-      this.isObject = false;
-      this.isArray = false;
-      this.isString = false;
-      this.isInteger = false;
-      this.isFloat = false;
-      this.isBoolean = false;
-      this.isNull = false;
-      var type = v.type || v.value.type;
-      if (!type) {
-        this.changingType = true;
-        return;
-      }
-
-      switch (type) {
-        case 'object':
-          this.isObject = true;
-          break;
-        case 'array':
-          this.isArray = true;
-          break;
-        case 'string':
-          this.isString = true;
-          break;
-        case 'float':
-          this.isFloat = true;
-          break;
-        case 'integer':
-          this.isInteger = true;
-          break;
-        case 'boolean':
-          this.isBoolean = true;
-          break;
-        case 'null':
-          this.isNull = true;
-          break;
-      }
-    },
-
-    _countChildren: function() {
-      // console.log('Children count changed');
-      var v = this.value;
-      this.set('childrenObjects', v.children || v.value.children);
-    },
-
-    _remove: function() {
-      this.fire('remove-value', {
-        value: this.value
-      });
-    },
-
-    _deepRemove: function(e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      e.stopPropagation();
-      // debugger;
-      var rm = e.detail.value;
-      /// this.value.value.children[0] === e.detail.value
-      var children = this.value.children || this.value.value.children;
-      for (let i = 0, len = children.length; i < len; i++) {
-        if (children[i] === rm) {
-          if ('value' in this.value) {
-            this.splice('value.value.children', i, 1);
-          } else {
-            this.splice('value.children', i, 1);
-          }
-          Polymer.dom(this.root).querySelector('[object-repeater]').render();
-          break;
+      if (['object', 'array'].indexOf(value.type) !== -1) {
+        var _repeater;
+        if (this.value.type === 'object') {
+          _repeater = this.$$('#object');
+        } else {
+          _repeater = this.$$('#array');
         }
+        if (!_repeater) {
+          return;
+        }
+        var index = _repeater.indexForElement(e.target);
+        if (index === -1 || index === undefined) {
+          // top object (in this properties tree) can't remove itself from the parent. Only parent
+          // can do this. Stop here and the event bubbles up.
+          return;
+        }
+
+        if (this.value.type === 'object') {
+          this.splice('value.properties', index, 1);
+        } else {
+          this.splice('value.items', index, 1);
+        }
+
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        e.stopPropagation();
       }
-      // console.log('Remove deeply', e);
+      // pass it to the parent.
     },
 
-    _insertObject: function() {
-      // console.log('_insertObject', this.value);
-      var obj = {
-        'name': '',
-        'value': {
-          value: ''
-        }
+    // Appends a new child property to the Object or the Array.
+    _appendProperty: function() {
+      var property = {
+        name: '',
+        type: ''
       };
-      if ('value' in this.value) {
-        if (!this.value.value.children || !this.value.value.children.length) {
-          this.set('value.value.children', [obj]);
+      if (this.value.type === 'object') {
+        if (this.value.properties) {
+          this.push('value.properties', property);
         } else {
-          this.push('value.value.children', obj);
+          this.set('value.properties', [property]);
         }
       } else {
-        if (!this.value.children || !this.value.children.length) {
-          this.set('value.children', [obj]);
+        if (this.value.items) {
+          // set new item's type to the same as the last item
+          var type = this.value.items[this.value.items.length - 1].type;
+          property.type = type;
+          this.push('value.items', property);
         } else {
-          this.push('value.children', obj);
+          this.set('value.items', [property]);
         }
       }
-      Polymer.dom(this.root).querySelector('[object-repeater]').render();
-    },
-
-    _computeKeyLineClass: function(isObject, changingType) {
-      var clazz = 'key-line';
-      if (isObject && !changingType) {
-        clazz += ' objectable';
-      }
-      return clazz;
-    },
-
-    _valueMenuItemSelected: function(e) {
-      switch (e.detail.item.dataset.action) {
-        case 'type-change':
-          this.changingType = true;
-          break;
-        case 'delete':
-          this._remove(e);
-          break;
-      }
-      var target = Polymer.dom(e).rootTarget;
-      target.selected = -1;
-    },
-
-    _cancelTypeChange: function() {
-      this.changingType = false;
-    },
-
-    _typeSelected: function(e) {
-      if (!this.changingType) {
-        return;
-      }
-      this.changingType = false;
-      var type = e.detail.item.dataset.type;
-      this.set('value.type', type);
-      this.set('value.value.type', type);
-      var _setValue = '';
-      if (type === 'null') {
-        _setValue = null;
-      } else if (type === 'boolean') {
-        _setValue = true;
-      }
-      this.set('value.value.value', _setValue);
-    },
-
-    _render: function() {
-      var elm = Polymer.dom(this.root).querySelector('[object-repeater]');
-      if (elm) {
-        elm.render();
-      }
-    },
-
-    _schemaChanged: function() {
-      var s = this.schema;
-      if (!s || !s.properties) {
-        this.keySuggestionsList = [];
-        return;
-      }
-      var suggestions = Object.getOwnPropertyNames(s.properties);
-      if (!suggestions.length) {
-        return;
-      }
-      // console.log('setting keySuggestionsList', suggestions);
-      this.set('keySuggestionsList', suggestions);
-    },
-
-    _onSuggestion: function(e) {
-      var key = e.detail.value;
-      var p = this.schema.properties;
-      if (!(key in p)) {
-        return;
-      }
-      var prop = p[key];
-      var type = prop.type;
-      if (type) {
-        this.set('value.value.type', type);
-      }
-      if (prop.description) {
-        this.description = prop.description;
-      } else {
-        this.description = undefined;
-      }
-      console.log('_onSuggestion', p[key]);
-    },
-
-    _notifyValueChange: function(e) {
-      var _root = 'value.';
-      if ('value' in this.value) {
-        _root += 'value.children';
-      } else {
-        _root += 'children';
-      }
-      var path = e.path.replace('childrenObjects', _root);
-      this.set(path, e.value);
     }
   });
   </script>

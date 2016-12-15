@@ -10,7 +10,9 @@
   ],
   "private": true,
   "main": [
-    "body-json-editor.html"
+    "body-json-editor.html",
+    "object-editor.html",
+    "simple-type-editor.html"
   ],
   "repository": {
     "type": "git",
@@ -28,7 +30,9 @@
     "paper-menu": "PolymerElements/paper-menu#^1.2.2",
     "paper-autocomplete": "advanced-rest-client/paper-autocomplete#^1.0.11",
     "arc-icons": "advanced-rest-client/arc-icons#^1.0.10",
-    "paper-button": "PolymerElements/paper-button#^1.0.14"
+    "paper-button": "PolymerElements/paper-button#^1.0.14",
+    "marked-element": "PolymerElements/marked-element#^1.2.0",
+    "markdown-styles": "advanced-rest-client/markdown-styles#^1.0.0"
   },
   "devDependencies": {
     "iron-component-page": "polymerelements/iron-component-page#1.0.0",
