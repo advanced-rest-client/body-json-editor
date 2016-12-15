@@ -16,7 +16,7 @@
   "author": "The Advanced REST client authors <arc@mulesoft.com>",
   "scripts": {
     "serve": "node_modules/.bin/polymer serve",
-    "lint": "node_modules/.bin/polymer lint body-json-editor.html",
+    "lint": "node_modules/.bin/polymer lint body-json-editor.html object-editor.html simple-type-editor.html body-json-editor-behavior.html",
     "test-sauce": "exit 0; node_modules/.bin/polymer test --plugin sauce --job-name \"body-json-editor:local-test\"",
     "test": "node_modules/.bin/polymer test",
     "deps": "npm install --quiet && bower install --quiet",

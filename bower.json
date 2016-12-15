@@ -12,7 +12,8 @@
   "main": [
     "body-json-editor.html",
     "object-editor.html",
-    "simple-type-editor.html"
+    "simple-type-editor.html",
+    "body-json-editor-behavior.html"
   ],
   "repository": {
     "type": "git",

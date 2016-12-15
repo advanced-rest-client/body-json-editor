@@ -16,15 +16,9 @@ the License.
   'use strict';
   g.ArcBehaviors = g.ArcBehaviors || {};
   /**
-   * Headers parser behavior to be impplemented with elements that needs to parse headers data.
+   * A set of common properties and function used by all elements in the JSON editor.
    *
-   * In most cases function defined in this behavior can work with the headers defined as a string,
-   * array of objects (name, value keys) or as Header object.
-   *
-   * To calculate errors properly, set `isPayload` property when current request can carry a
-   * payload.
-   *
-   * @polymerBehavior ArcBehaviors.HeadersParserBehavior
+   * @polymerBehavior ArcBehaviors.BodyJsonEditorBehavior
    */
   g.ArcBehaviors.BodyJsonEditorBehavior = {
     properties: {
