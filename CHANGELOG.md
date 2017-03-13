@@ -1,3 +1,13 @@
+<a name="0.1.4"></a>
+## [0.1.4](https://github.com/advanced-rest-client/body-json-editor/compare/0.1.3...v0.1.4) (2017-03-13)
+
+
+### Fix
+
+* Fixed and issue when the form wasn't cleared when the value is empty ([43707b5c8b172eb9c5d54a47d314c1d186f428f2](https://github.com/advanced-rest-client/body-json-editor/commit/43707b5c8b172eb9c5d54a47d314c1d186f428f2))
+
+
+
 <a name="0.1.3"></a>
 ## [0.1.3](https://github.com/advanced-rest-client/body-json-editor/compare/0.1.2...v0.1.3) (2016-12-15)
 
