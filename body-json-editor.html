@@ -403,6 +403,9 @@ Custom property | Description | Default
       if (this._internalValueChage) {
         return;
       }
+      if (!value) {
+        return this.set('json', '');
+      }
       try {
         var json = JSON.parse(value);
         this.set('json', json);
