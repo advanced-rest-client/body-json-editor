@@ -5,10 +5,8 @@ node_js: stable
 before_script:
 - npm install --silent bower polymer-cli
 - ./node_modules/.bin/bower install --silent
-addons:
-  sauce_connect: false
 script:
-- ./node_modules/.bin/polymer lint body-json-editor.html
+- npm run lint
 # - ./node_modules/.bin/polymer test --plugin sauce --job-name "body-json-editor:${TRAVIS_BRANCH}" --build-number=${TRAVIS_BUILD_NUMBER}
 cache:
   directories:
