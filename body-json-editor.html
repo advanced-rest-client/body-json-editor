@@ -404,7 +404,7 @@ Custom property | Description | Default
         return;
       }
       if (!value) {
-        return this.set('json', '');
+        return this.set('json', '{}');
       }
       try {
         var json = JSON.parse(value);
