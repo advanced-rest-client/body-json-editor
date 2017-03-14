@@ -1,3 +1,13 @@
+<a name="0.1.6"></a>
+## [0.1.6](https://github.com/advanced-rest-client/body-json-editor/compare/0.1.4...v0.1.6) (2017-03-14)
+
+
+### Fix
+
+* When clearing the editor value it will now set the empty object value so the add propery button will be visible ([9a6320438657179079f44945a3a961fef02660e7](https://github.com/advanced-rest-client/body-json-editor/commit/9a6320438657179079f44945a3a961fef02660e7))
+
+
+
 <a name="0.1.5"></a>
 ## [0.1.5](https://github.com/advanced-rest-client/body-json-editor/compare/0.1.4...v0.1.5) (2017-03-13)
 
