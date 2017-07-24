@@ -64,16 +64,16 @@ Custom property | Description | Default
     }
 
     </style>
-    <template is="dom-if" if="[[_typeIs(value.type, 'object')]]">
+    <template is="dom-if" if="[[model.isObject]]">
       <simple-type-editor value="{{value}}"></simple-type-editor>
-      <template is="dom-repeat" items="{{value.properties}}" id="object">
+      <template is="dom-repeat" items="{{model.properties}}" id="object">
         <object-editor narrow="[[narrow]]" class="indent" value="{{item}}" schema="[[subPropertySchema]]"></object-editor>
       </template>
       <div class="indent add-action">
         <paper-button class="action-button" on-tap="_appendProperty">add subproperty</paper-button>
       </div>
     </template>
-    <template is="dom-if" if="[[_typeIs(value.type, 'array')]]">
+    <!-- <template is="dom-if" if="[[model.isArray]]">
       <simple-type-editor value="{{value}}"></simple-type-editor>
       <template is="dom-repeat" items="{{value.items}}" id="array">
         <object-editor narrow="[[narrow]]" class="indent" no-key value="{{item}}" schema="[[subPropertySchema]]" is-array-item allowed-types="[[allowedTypes]]"></object-editor>
@@ -81,9 +81,9 @@ Custom property | Description | Default
       <div class="indent add-action">
         <paper-button class="action-button" on-tap="_appendProperty">add array item</paper-button>
       </div>
-    </template>
-    <template is="dom-if" if="[[!_typeIs(value.type, 'array', 'object')]]">
-      <simple-type-editor narrow="[[narrow]]" value="{{value}}" no-key="[[noKey]]" schema="[[schema]]" allowed-types="[[allowedTypes]]"></simple-type-editor>
+    </template> -->
+    <template is="dom-if" if="[[!mode.isComplex]]">
+      <simple-type-editor narrow="[[narrow]]" name="{{name}}" value="{{value}}" no-key="[[noKey]]" schema="[[schema]]" allowed-types="[[allowedTypes]]"></simple-type-editor>
     </template>
   </template>
   <script>
@@ -94,22 +94,10 @@ Custom property | Description | Default
       // If true this element should not show a key field.
       noKey: {
         type: Boolean
-      },
-      // The value of this editor.
-      value: {
-        type: Object,
-        notify: true
-      },
-      // If set, means that this object is a sub-property of an array.
-      isArrayItem: {
-        type: Boolean,
-        value: false
       }
     },
 
     observers: [
-      '_schemaChanged(schema.*)',
-      '_computeChildTypes(isArrayItem, schema.*)'
     ],
 
     listeners: {

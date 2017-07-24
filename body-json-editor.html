@@ -13,8 +13,10 @@ the License.
 -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../request-payload-editor-behavior/request-payload-editor-behavior.html">
+<link rel="import" href="../arc-polyfills/arc-polyfills.html">
 <link rel="import" href="body-json-editor-behavior.html">
-<link rel="import" href="object-editor.html">
+<link rel="import" href="property-editor.html">
 <!--
 `<body-json-editor>` A JSON editor for HTTP body
 
@@ -37,18 +39,9 @@ styling:
 Custom property | Description | Default
 ----------------|-------------|----------
 `--body-json-editor` | Mixin applied to the element | `{}`
-`--body-json-object-editor` | Mixin applied to the `object-editor` element. Note that because of the recurcy this element contains the same element. So setting padding / margin on this element is basically bad idea. | `{}`,
-`--paper-dropdown-menu-input` | Mixin applied to the dropdown menu input. | `{color: #673AB7;}`
-`--paper-dropdown-menu-button` | Mixin applied to the dropdown menu button. | `{color: #673AB7;}`
-`--primary-color` | Color of the action button | ``
-`--simple-type-editor` | Mixin applied to the `simple-type-editor` element. Note that because of the recurcy this element contains the same element. So setting padding / margin on this element is basically bad idea. | `{}`,
-`--inline-documentation-color` | Color of the documentartion font. Inline documentation appears below text fields as a hint for input. | `rgba(0, 0, 0, 0.64)`
-`--inline-documentation-text-size` | Size of the documentation font. Inline documentation appears below text fields as a hint for input. | `12px`
-`--code-type-text-value-color` | Text color of the code highligted string value | `#080`
-`--code-type-number-value-color` | Text color of the code highligted numeric value | `#303F9F`
-`--code-type-boolean-value-color` | Text color of the code highligted boolean value | `#4A148C`
-`--code-type-null-value-color` | Text color of the code highligted nullable value | `#4A148C`
-`--code-punctuation-value-color` | Text color of the code highligted: the punctuation | `rgba(0, 0, 0, 0.54)`
+`--body-json-editor-action-button` | Mixin applied to the action buttons | ``
+
+See docs for other elements in the package for more styling options.
 
 @group UI Elements
 @element body-json-editor
@@ -59,153 +52,232 @@ Custom property | Description | Default
     <style>
      :host {
       display: block;
-      @apply(--body-json-editor);
+      @apply --body-json-editor;
     }
 
     .action-button {
       color: var(--primary-color);
+      @apply --body-json-editor-action-button;
     }
     </style>
-    <template is="dom-if" if="[[_isObject(model.type)]]">
-      <template is="dom-repeat" items="{{model.properties}}" id="object">
-        <object-editor narrow="[[narrow]]" value="{{item}}" schema="[[schema]]"></object-editor>
-      </template>
+    <template is="dom-if" if="[[_modelNotSet]]">
       <div class="add-action">
-        <paper-button class="action-button" on-tap="_appendProperty">add property</paper-button>
+        <paper-button class="action-button" on-tap="_addProperty">Add object property</paper-button>
+        <paper-button class="action-button" on-tap="_addItem">Add array item</paper-button>
       </div>
     </template>
-    <template is="dom-if" if="[[_isArray(model.type)]]">
-      <template is="dom-repeat" items="{{model.items}}" id="array">
-        <object-editor narrow="[[narrow]]" no-key value="{{item}}" schema="[[schema]]"></object-editor>
+    <template is="dom-if" if="[[model.isObject]]">
+      <template is="dom-repeat" items="{{model.properties}}" id="object">
+        <property-editor narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
       </template>
       <div class="add-action">
-        <paper-button class="action-button" on-tap="_appendProperty">add array item</paper-button>
+        <paper-button class="action-button" on-tap="_addProperty">Add property</paper-button>
+      </div>
+    </template>
+    <template is="dom-if" if="[[model.isArray]]">
+      <template is="dom-repeat" items="{{model.items}}" id="array">
+        <property-editor narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
+      </template>
+      <div class="add-action">
+        <paper-button class="action-button" on-tap="_addItem">Add array item</paper-button>
       </div>
     </template>
   </template>
   <script>
-  Number.isInteger = Number.isInteger || function(value) {
-    return typeof value === 'number' &&
-      isFinite(value) &&
-      Math.floor(value) === value;
-  };
-  // Production steps of ECMA-262, Edition 6, 22.1.2.1
-  // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/from
-  if (!Array.from) {
-    Array.from = (function() {
-      var toStr = Object.prototype.toString;
-      var isCallable = function(fn) {
-        return typeof fn === 'function' || toStr.call(fn) === '[object Function]';
-      };
-      var toInteger = function(value) {
-        var number = Number(value);
-        if (isNaN(number)) {
-          return 0;
-        }
-        if (number === 0 || !isFinite(number)) {
-          return number;
-        }
-        return (number > 0 ? 1 : -1) * Math.floor(Math.abs(number));
-      };
-      var maxSafeInteger = Math.pow(2, 53) - 1;
-      var toLength = function(value) {
-        var len = toInteger(value);
-        return Math.min(Math.max(len, 0), maxSafeInteger);
-      };
-
-      return function from(arrayLike /*, mapFn, thisArg */) {
-        var C = this;
-        var items = Object(arrayLike);
-        if (arrayLike === null) {
-          throw new TypeError('Array.from requires an array-like object - not null or undefined');
-        }
-        var mapFn = arguments.length > 1 ? arguments[1] : void undefined;
-        var T;
-        if (typeof mapFn !== 'undefined') {
-          if (!isCallable(mapFn)) {
-            throw new TypeError('Array.from: when provided, the second argument must be a function');
-          }
-          if (arguments.length > 2) {
-            T = arguments[2];
-          }
-        }
-        var len = toLength(items.length);
-        var A = isCallable(C) ? Object(new C(len)) : new Array(len);
-        var k = 0;
-        var kValue;
-        while (k < len) {
-          kValue = items[k];
-          if (mapFn) {
-            A[k] = typeof T === 'undefined' ? mapFn(kValue, k) : mapFn.call(T, kValue, k);
-          } else {
-            A[k] = kValue;
-          }
-          k += 1;
-        }
-        A.length = len;
-        return A;
-      };
-    }());
-  }
-
   Polymer({
     is: 'body-json-editor',
-    behaviors: [ArcBehaviors.BodyJsonEditorBehavior],
+    behaviors: [
+      ArcBehaviors.BodyJsonEditorBehavior,
+      ArcBehaviors.RequestPayloadEditorBehavior
+    ],
     properties: {
-      // A JSON object. Please, use the `value` property to set / get JSON
-      json: {
+      /**
+       * A JavaScript representation of RAML data type object.
+       */
+      ramlType: Object,
+      /**
+       * View model for the editor.
+       */
+      model: {
         type: Object,
-        notify: true
-      },
-      // Generated model.
-      model: Object,
-      /**
-       * If available, this is the RAML's type definition. It will provide schema definition
-       * for the editor.
-       */
-      type: Object,
-      // gets / sets JSON string value
-      value: {
-        type: String,
-        notify: true,
-        value: ''
+        readOnly: true
       },
       /**
-       * Determines if the editor is currently displayed in the UI and relevant to the user.
-       * If not (parent element/app set it to false) then all computations will be on hold
-       * until the element is open again.
+       * A data model for autocomplete functions generated from `schema` or
+       * `raml` property.
        */
-      opened: {
+      dataModel: {
+        type: Object,
+        readOnly: true
+      },
+      // If true the the model is not set.
+      _modelNotSet: {
         type: Boolean,
-        value: true
+        value: true,
+        computed: '_computeModelNotSet(model)'
       }
     },
 
     observers: [
-      '_typeChanged(type.*)',
-      '_valueChanged(opened, value)',
-      '_jsonChanged(opened, json)',
-      '_modelChanged(opened, model.*)',
+      '_typeChanged(_isOpened, ramlType)',
+      '_valueChanged(_isOpened, value)',
+      '_modelChanged(_isOpened, model.*)'
     ],
 
-    listeners: {
-      'remove-property': '_onRemoveProperty'
-    },
-
-    ready: function() {
-      if (!this.json) {
-        this.json = {};
-      }
-    },
-
-    _jsonChanged: function(opened, json) {
-      if (!opened) {
+    /**
+     * Generates data model for a RAML type.
+     */
+    _typeChanged: function(opened, type) {
+      if (!opened || !type) {
         return;
       }
-      this.debounce('model-translator', function() {
-        this.model = this._createModel(json);
-      }, 250);
+      var model = this._computeDataModel(type);
+      this._setDataModel(model);
     },
+
+    _computeDataModel: function(type) {
+      console.log(type);
+    },
+
+    _computeModelNotSet: function(model) {
+      return !model || !(model.properties || model.items);
+    },
+
+    /**
+     * To be called when the model is not yet created and should be created for
+     * an object with a single property
+     */
+    _addProperty: function() {
+      this.__createItemType('object');
+    },
+
+    _addItem: function() {
+      this.__createItemType('array');
+    },
+
+    __createItemType: function(type) {
+      var property = this._computeModelItem({
+        isRoot: false,
+      });
+      var propertyName;
+      if (type === 'object') {
+        propertyName = 'properties';
+      } else {
+        propertyName = 'items';
+      }
+      if (!this.model) {
+        var model = this._computeModelItem({
+          type: type,
+          isRoot: true,
+        });
+        model[propertyName].push(property);
+        this._setModel(model);
+      } else {
+        this.push(['model', propertyName], property);
+      }
+    },
+
+    _removeProperty: function(e) {
+      var index = e.model.get('index');
+      var model = this.model;
+      var property;
+      if (model.isObject) {
+        property = 'properties';
+      } else {
+        property = 'items';
+      }
+      if (model[property].length === 1) {
+        this._setModel(undefined);
+      } else {
+        this.splice(['model', property], index, 1);
+      }
+    },
+
+    _modelChanged: function(opened, record) {
+      if (!opened || !record || !record.path) {
+        return;
+      }
+      if (record.path.indexOf('length') !== -1) {
+        return;
+      }
+      this.debounce('model-to-value', function() {
+        this._setValueFromValue();
+      }, 10);
+    },
+
+    _setValueFromValue: function() {
+      var model = this.model;
+      var value = this._computeJson(model);
+      value = JSON.stringify(value);
+      this._internalValueChage = true;
+      this.set('value', value);
+      this._internalValueChage = false;
+    },
+
+    _computeJson: function(model) {
+      var result = model.isArray ? [] : {};
+
+      var properties;
+      if (model.isArray) {
+        if (!model.items || !model.items.length) {
+          return result;
+        }
+        properties = model.items;
+      } else {
+        if (!model.properties || !model.properties.length) {
+          return result;
+        }
+        properties = model.properties;
+      }
+
+      properties.forEach(function(item) {
+        var _value;
+        if (item.isObject || item.isArray) {
+          _value = this._computeJson(item);
+        } else {
+          _value = this._valueWithType(item);
+        }
+        if (model.isArray) {
+          result[result.length] = _value;
+        } else {
+          result[item.name] = _value;
+        }
+      }, this);
+      return result;
+    },
+
+    _valueWithType: function(model) {
+      var result;
+      switch (model.type) {
+        case 'integer':
+        case 'float':
+          result = Number(model.value);
+          if (result !== result) {
+            result = model.value;
+          }
+          break;
+        case 'boolean':
+          var type = typeof model.value;
+          if (type === 'boolean') {
+            result = model.value;
+          } else {
+            if (model.value === 'true') {
+              result = true;
+            } else {
+              result = false;
+            }
+          }
+          break;
+        case 'null':
+          result = null;
+          break;
+        default:
+          result = model.value;
+      }
+
+      return result;
+    },
+
     /**
      * Creates an internal model from the `object`.
      * Object can be any JavaScript object.
@@ -281,145 +353,99 @@ Custom property | Description | Default
       return result;
     },
 
-    _isObject: function(type) {
-      return type === 'object';
-    },
-
-    _isArray: function(type) {
-      return type === 'array';
-    },
-
-    /**
-     * Removes the property from this object.
-     */
-    _onRemoveProperty: function(e) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      e.stopPropagation();
-
-      var _repeater;
-      if (this.model.type === 'object') {
-        _repeater = this.$$('#object');
-      } else {
-        _repeater = this.$$('#array');
-      }
-      if (!_repeater) {
-        return;
-      }
-      var index = _repeater.indexForElement(e.target);
-      if (index === -1) {
-        return;
-      }
-      if (this.model.type === 'object') {
-        this.splice('model.properties', index, 1);
-      } else {
-        this.splice('model.items', index, 1);
-      }
-    },
-
-    /**
-     * A handler to any change in the model object.
-     * Model represents a object keys and values. So if any of the object editors change the value
-     * (or key) it will be notified here and the value of the editor will be updated.
-     *
-     * The value won't be updated if the change is comming from the external source.
-     */
-    _modelChanged: function(opened, record) {
-      if (!opened) {
-        return;
-      }
-      var obj = record.base;
-      obj = this._computeJson(obj);
-      this._internalValueChage = true;
-      this.set('value', JSON.stringify(obj, null, 2));
-      this._internalValueChage = false;
-    },
-
-    _computeJson: function(model) {
-      var isArray = model.type === 'array';
-      var result = isArray ? [] : {};
-
-      var properties;
-      if (isArray) {
-        if (!model.items || !model.items.length) {
-          return result;
-        }
-        properties = model.items;
-      } else {
-        if (!model.properties || !model.properties.length) {
-          return result;
-        }
-        properties = model.properties;
-      }
-      properties.forEach(function(item) {
-        var _value;
-        if (item.type === 'object' || item.type === 'array') {
-          _value = this._computeJson(item);
-        } else {
-          _value = item.value;
-          if (['integer', 'float'].indexOf(item.type) !== -1) {
-            _value = Number(_value);
-            if (_value !== _value) {
-              _value = item.value;
-            }
-          }
-        }
-        if (isArray) {
-          result[result.length] = _value;
-        } else {
-          result[item.name] = _value;
-        }
-      }, this);
-      return result;
-    },
-    // Appends a new child property to the Object or the Array.
-    _appendProperty: function() {
-      var property = {
-        name: '',
-        type: ''
-      };
-      if (this.model.type === 'object') {
-        if (this.model.properties) {
-          this.push('model.properties', property);
-        } else {
-          this.set('model.properties', [property]);
-        }
-      } else {
-        if (this.model.items) {
-          // set new item's type to the same as the last item
-          var type = this.model.items[this.model.items.length - 1].type;
-          property.type = type;
-          this.push('model.items', property);
-        } else {
-          this.set('model.items', [property]);
-        }
-      }
-    },
     // Updates the model if the value attribute change from the outside.
     _valueChanged: function(opened, value) {
-      if (!opened) {
+      if (!opened || this._internalValueChage) {
         return;
       }
-      if (this._internalValueChage) {
+      var json;
+      if (typeof value === 'string') {
+        try {
+          json = JSON.parse(value);
+        } catch (e) {
+          return;
+        }
+      } else {
+        json = value;
+      }
+      var model = this._modelFromValue(json);
+      this._setModel(model);
+    },
+    /**
+     * Generates a view model from a value property.
+     * @param {Object} obj JavaScript object or array.
+     */
+    _modelFromValue: function(obj) {
+      var type = this._detectObjectType(obj);
+      if (!(type === 'object' || type === 'array')) {
+        console.info('body-json-editor can only support objects or arrays.');
         return;
       }
-      if (!value) {
-        return this.set('json', '{}');
-      }
-      try {
-        var json = JSON.parse(value);
-        this.set('json', json);
-      } catch (e) {}
+      var model = this._computeValueProperyModel(obj);
+      model.isRoot = true;
+      return model;
     },
 
-    _typeChanged: function(record) {
-      var type = record.base;
-      if (!type) {
-        this.schema = undefined;
-      } else {
-        this.schema = this._generateJsonSchema(type);
+    _computeValueProperyModel: function(value, key) {
+      var baseType = this._detectObjectType(value);
+      var baseModel = this._computeModelItem({
+        type: baseType,
+        isRoot: false,
+        name: key || '',
+        value: value || ''
+      });
+
+      if (baseModel.isArray) {
+        value.forEach(function(item) {
+          var _model = this._computeValueProperyModel(item);
+          if (_model.isBoolean) {
+            _model.value = String(_model.value);
+          }
+          baseModel.items.push(_model);
+        }, this);
+      } else if (baseModel.isObject) {
+        Object.keys(value).forEach(function(key) {
+          var _model = this._computeValueProperyModel(value[key], key);
+          if (_model.isBoolean) {
+            _model.value = String(_model.value);
+          }
+          baseModel.properties.push(_model);
+        }, this);
       }
-    }
+
+      return baseModel;
+    },
+
+    /**
+     * @param {any} obj Object to test for a type.
+     * @return {String} type of object.
+     */
+    _detectObjectType: function(obj) {
+      if (obj === undefined) {
+        return 'null';
+      }
+      var type = typeof obj;
+      if (type !== 'object') {
+        if (type === 'string') {
+          var _test = Number(obj);
+          if (_test !== _test) {
+            return type;
+          }
+          _test = Number(obj);
+          if (_test === _test) {
+            return 'number';
+          }
+        }
+        return type;
+      }
+      if (obj === null) {
+        return 'null';
+      }
+      if (this._isArray(obj)) {
+        return 'array';
+      }
+      return 'object';
+    },
   });
   </script>
 </dom-module>
