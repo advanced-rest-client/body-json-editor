@@ -131,16 +131,43 @@ See docs for other elements in the package for more styling options.
       if (!opened || !type) {
         return;
       }
+      if (type instanceof Array) {
+        type = type[0];
+      }
+      if (!type) {
+        return;
+      }
+      this._computeRamlBaseModel(type);
       var model = this._computeDataModel(type);
       this._setDataModel(model);
     },
 
     _computeDataModel: function(type) {
+      if (!type) {
+        return;
+      }
+      if (['object', 'array'].indexOf(type.type) === -1) {
+        return;
+      }
       console.log(type);
+      var result = [];
+      // TODO: Compute a data model that can be used to autofill values.
+      return result;
     },
 
     _computeModelNotSet: function(model) {
       return !model || !(model.properties || model.items);
+    },
+    /**
+     * Computes view base model from the RAML type.
+     */
+    _computeRamlBaseModel: function(type) {
+      var baseType = type.type;
+      var model = this._computeModelItem({
+        isRoot: true,
+        type: baseType
+      });
+      this._setModel(model);
     },
 
     /**
