@@ -1,5 +1,4 @@
 language: node_js
-sudo: required
 dist: trusty
 node_js: stable
 before_script:
@@ -7,14 +6,19 @@ before_script:
 - ./node_modules/.bin/bower install --silent
 script:
 - npm run lint
-# - ./node_modules/.bin/polymer test --plugin sauce --job-name "body-json-editor:${TRAVIS_BRANCH}" --build-number=${TRAVIS_BUILD_NUMBER}
+- ./node_modules/.bin/polymer test --plugin sauce --job-name "body-json-editor:${TRAVIS_BRANCH}"
+  --build-number=${TRAVIS_BUILD_NUMBER}
 cache:
   directories:
   - bower_components
   - node_modules
 branches:
   only:
-    - stage
-    - develop
+  - stage
+  - develop
 after_success:
-  - node tasks/ci.js
+- node tasks/ci.js
+env:
+  global:
+  - secure: BsWPAcdX+H2JXRy8ko/rxHNeVdM0FO0ebJ27YLU/25/BYIMl1IFkrKHjiKVQU6GaxIvukwV00qNa4qMujkBh4LIFfptlemn4SLa6VpmRPUSy5l8qgLpWvzC0pkyzDlwtgeZ8GiKz/OLhQKcCXEMSuVSHVUfkCADhCweNVLQ1JAuCwVcZ4yeF0s/k3Cza8xizXp1FPK4oS1YXPVWunh5Q9YtH1dewg/3YnOj5QDWaceNu0hU2LuyZLR6twcKelDOWLhiMbd2re+cJqe8LtPfpxAJmhgytE6WxUBc4djGajL1PkKytZBeP71V20QV/DRg+3c2bXxWy2k3n6Y+H5hUkM/43g0FZBLzlSQFMjbXm6Bc2HqzBit19FXy0a6YSAkGtyKL+QsrXEtV93k+0Mn3xy1Wofg1IPleccH+wzlJKH4DbDY4WzALebHl8cd8VyXC42fYv7ogJhD6KS5/BXEuPc7wC0II0yeKMeRqKgbkWAjJZ8uGAOo8r4lO+u4uSe17dvgEPwontvBSnAler8v8MjzHkMUNgxT0YiL9P267o7CGQ46o3RTywCdiI0uiLxE8q06iO3pTSNiTtydvWZOXjJZn0gfs8Fre5KUZ+fCNoDkxGwaduRNG9XqFe2s51nEVjwKztRDhk47wOIJT0YSeN6FPsD0eyBi9xnuDd3VV3rIY=
+  - secure: nwqUGHVxTKmTEC9kXFBrSo9pjuRo4uIbEDqXSMXNTqT9o4CnSc9W/ZTkaRKe9cOamhnk4kjT5PQbU7mbqo+vgFWytLo2OBNSzadFR1ADU5OhAGFklfO0gHKjnoMO5fimcKg1xF23cAiBrvYzuVY9my/Gll1I1qjL+n5Xuc18ZRTFMeEzi2RD/5vPK+NdTZb55j1ExOgsQMB2mG8HS0kb7yJqQQzpG3Bsun3liAU+RIT4zKn+glIEiEuhENRIhglMRblbElj+FECi6Idk7BS1uba+3+/7W63JBtyvaQAzQ0McKrSufiT1dBUHUIqpmX0F3KDvp+/aaUU56c8Xg22lsIBTKQlw50IN6RC+amj9KXRPvVgXbWVXzRdlZFfq/ht896LgIF/LXSablCEnanr8rL9ZdoUl0JoKkwGr+LsVDW5sE8iLkMIKUdmvHeixgnfc2Jh1cBGCw1Cb2FgiF5fSaV2eh4nJYkI+DQAjCe8Kl844yy0Ehflx/58C1syQhjyUC4G/jIK1VmPvmvJ5iWRJryBsxMua/sbAeSzAc8D72SkwLQEB8l75ewdJPU3PZuH7E32+0WO7u2+hlLsRmstBjxdnwcUtnWac3dKqg8/yU6+z3XV9qwVHsDA5r6REnTE/cf/zzACCHUb/nMA19px84lRI9i7D5kf5vWtkKo69kg0=

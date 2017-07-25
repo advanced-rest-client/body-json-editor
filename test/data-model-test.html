@@ -1,0 +1,133 @@
+<!doctype html>
+<!--
+@license
+Copyright 2017 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../../raml-js-parser/raml-js-parser.html">
+    <link rel="import" href="../../raml-json-enhance/raml-json-enhance.html">
+    <link rel="import" href="../body-json-editor.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <body-json-editor></body-json-editor>
+      </template>
+    </test-fixture>
+    <test-fixture id="parser">
+      <template>
+        <raml-js-parser json></raml-js-parser>
+      </template>
+    </test-fixture>
+    <test-fixture id="enhancer">
+      <template>
+        <raml-json-enhance></raml-json-enhance>
+      </template>
+    </test-fixture>
+
+    <script>
+    /* global fixture, assert */
+    suite('Data model', function() {
+      var raml;
+      var element;
+      suiteSetup(function(done) {
+        this.timeout(120000);
+        var baseUrl = location.href.substr(0, location.href.lastIndexOf('/') + 1);
+        var parser = fixture('parser');
+        var enhancer = fixture('enhancer');
+        enhancer.addEventListener('raml-json-enhance-ready', function(e) {
+          raml = e.detail.json;
+          done();
+        });
+        parser.loadApi(baseUrl + 'test.raml')
+          .then(function(data) {
+            enhancer.json = data.json.specification;
+          })
+          .catch(function(e) {
+            done(new Error('Parser error: ' + (e.message || 'Some error happened...')));
+          });
+      });
+
+      setup(function() {
+        element = fixture('basic');
+        element.ramlType = raml.types.Test;
+      });
+
+      test('Computes base model type', function() {
+        assert.isTrue(element.model.isObject);
+      });
+
+      test('Computes type', function() {
+        assert.equal(element.typeModel.type, 'object');
+      });
+
+      test('Computes isObject', function() {
+        assert.isTrue(element.typeModel.isObject);
+      });
+
+      test('Computes isArray', function() {
+        assert.isFalse(element.typeModel.isArray);
+      });
+
+      test('Computes defaultsMapping', function() {
+        assert.typeOf(element.typeModel.defaultsMapping, 'object');
+        assert.equal(Object.keys(element.typeModel.defaultsMapping).length, 5);
+      });
+
+      test('Computes typesMapping', function() {
+        assert.typeOf(element.typeModel.typesMapping, 'object');
+        assert.lengthOf(Object.keys(element.typeModel.typesMapping), 8);
+      });
+
+      test('Computes valuesMapping', function() {
+        assert.typeOf(element.typeModel.valuesMapping, 'object');
+        assert.lengthOf(Object.keys(element.typeModel.valuesMapping), 5);
+      });
+
+      test('Computes keys', function() {
+        assert.lengthOf(element.typeModel.keys, 8);
+      });
+
+      test('Computes properties', function() {
+        assert.typeOf(element.typeModel.properties, 'object');
+        assert.lengthOf(Object.keys(element.typeModel.properties), 2);
+      });
+
+      test('Properties (object) are computed', function() {
+        var prop = element.typeModel.properties.objectable;
+        assert.isTrue(prop.isObject, 'isObject is set');
+        assert.isTrue(prop.keys instanceof Array, 'Keys are array');
+        assert.equal(prop.type, 'object');
+        assert.lengthOf(Object.keys(prop.defaultsMapping), 3, 'defaultsMapping is set');
+        assert.lengthOf(Object.keys(prop.typesMapping), 3, 'typesMapping is set');
+        assert.lengthOf(Object.keys(prop.valuesMapping), 3, 'valuesMapping is set');
+        assert.lengthOf(Object.keys(prop.properties), 0, 'properties is set');
+      });
+
+      test('Properties (object) are computed', function() {
+        var prop = element.typeModel.properties.arrable;
+        assert.isFalse(prop.isObject, 'isObject is set');
+        assert.isTrue(prop.isArray, 'isArray is set');
+        assert.isTrue(prop.types instanceof Array, 'types are array');
+        assert.equal(prop.type, 'array');
+      });
+    });
+    </script>
+
+  </body>
+</html>

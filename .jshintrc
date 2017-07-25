@@ -17,6 +17,8 @@
   "mocha": true,
   "globals": {
     "Polymer": true,
-    "ArcBehaviors": true
+    "ArcBehaviors": true,
+    "console": true,
+    "Promise": true
   }
 }
