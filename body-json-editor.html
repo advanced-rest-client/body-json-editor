@@ -495,10 +495,14 @@ See docs for other elements in the package for more styling options.
         properties: {}
       };
 
-      if (!type.properties || !type.properties.length) {
+      if (!type.properties) {
         return result;
       }
       var typeProperties = type.properties;
+      if (!(typeProperties instanceof Array)) {
+        typeProperties = this._obj2array(typeProperties);
+      }
+
       for (var i = 0, size = typeProperties.length; i < size; i++) {
         var property = typeProperties[i];
         var key = property.key;
@@ -583,6 +587,20 @@ See docs for other elements in the package for more styling options.
         result = result.concat(type.examples);
       }
       return result;
+    },
+    /**
+     * Transforms object to an array and add a `key` on the items.
+     */
+    _obj2array: function(obj) {
+      if (obj instanceof Array) {
+        return obj;
+      }
+      return Object.keys(obj).map(function(key) {
+        if (Object(obj[key]) === obj[key]) {
+          obj[key].key = key;
+        }
+        return obj[key];
+      });
     }
   });
   </script>
