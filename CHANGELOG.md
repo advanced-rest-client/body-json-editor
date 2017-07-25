@@ -1,3 +1,34 @@
+<a name="0.2.1"></a>
+## [0.2.1](https://github.com/advanced-rest-client/body-json-editor/compare/0.1.7...0.2.1) (2017-07-25)
+
+
+### Breaking
+
+* Redesigned the element. Functionally the same but with new API ([16f09221bbd4894fc64b9e1d358f4dce524ca60e](https://github.com/advanced-rest-client/body-json-editor/commit/16f09221bbd4894fc64b9e1d358f4dce524ca60e))
+* Started redesign of the element ([99d5a585bdd8c114d99593ebc257461d04cd53c6](https://github.com/advanced-rest-client/body-json-editor/commit/99d5a585bdd8c114d99593ebc257461d04cd53c6))
+
+### Fix
+
+* Added object transformation function to compute properties. ([a93c49d02c6b113bb7cf7827eda3cb172ca0c6b9](https://github.com/advanced-rest-client/body-json-editor/commit/a93c49d02c6b113bb7cf7827eda3cb172ca0c6b9))
+* Fixed linter errors for data-model attribute ([3021a2a9686b066a791100afd001b2e3234bf27c](https://github.com/advanced-rest-client/body-json-editor/commit/3021a2a9686b066a791100afd001b2e3234bf27c))
+* Fixed narrow layout ([59141aadfa3e4324999a180e98b37c424565357f](https://github.com/advanced-rest-client/body-json-editor/commit/59141aadfa3e4324999a180e98b37c424565357f))
+* Fixed number types detection. ([69a7fc5da974ab2af841e64ffaf2bff75f4e48b0](https://github.com/advanced-rest-client/body-json-editor/commit/69a7fc5da974ab2af841e64ffaf2bff75f4e48b0))
+* Updated the function to test for object type. ([4a95b27765b8cf652ed996b33a6ad2da192a65ad](https://github.com/advanced-rest-client/body-json-editor/commit/4a95b27765b8cf652ed996b33a6ad2da192a65ad))
+
+### New
+
+* Added basic tests. ([ad132ea82935c6293be0d5e09e4789d1e80766b3](https://github.com/advanced-rest-client/body-json-editor/commit/ad132ea82935c6293be0d5e09e4789d1e80766b3))
+* Added tests fir view model. ([f9c34a65d50745f91086463798345dff77096861](https://github.com/advanced-rest-client/body-json-editor/commit/f9c34a65d50745f91086463798345dff77096861))
+* Added tests for RAML integration. ([fe1e47edab6e290ae15a17e40e98971fb2a34351](https://github.com/advanced-rest-client/body-json-editor/commit/fe1e47edab6e290ae15a17e40e98971fb2a34351))
+
+### Update
+
+* Added Sauce Labs configuration to  Travis configuration ([27bc81f768477f8c89d49782ba29ebb7ea950189](https://github.com/advanced-rest-client/body-json-editor/commit/27bc81f768477f8c89d49782ba29ebb7ea950189))
+* Enabled tests. ([9f13e45962d7c48bcb529193c04b07fb335abc4c](https://github.com/advanced-rest-client/body-json-editor/commit/9f13e45962d7c48bcb529193c04b07fb335abc4c))
+* Updated demo pages. ([2f70c7d0a726c936a723d8747d51d8e2f05e72ad](https://github.com/advanced-rest-client/body-json-editor/commit/2f70c7d0a726c936a723d8747d51d8e2f05e72ad))
+
+
+
 <a name="0.1.7"></a>
 ## [0.1.7](https://github.com/advanced-rest-client/body-json-editor/compare/0.1.6...v0.1.7) (2017-03-14)
 
