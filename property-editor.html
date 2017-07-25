@@ -116,8 +116,9 @@ Custom property | Description | Default
       @apply --layout-flex;
     }
 
-    :host([narrow]) .key-input {
-      @apply --layout-flex;
+    :host([narrow]) .key-input,
+    :host([narrow]) .key-name-container {
+      width: 100%;
     }
 
     :host([narrow]) .key-input,
