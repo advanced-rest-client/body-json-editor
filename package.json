@@ -17,7 +17,7 @@
   "scripts": {
     "serve": "node_modules/.bin/polymer serve",
     "lint": "node_modules/.bin/polymer lint body-json-editor.html property-editor.html primitive-value.html property-type-selector.html body-json-editor-behavior.html",
-    "test-sauce": "exit 0; node_modules/.bin/polymer test --plugin sauce --job-name \"body-json-editor:local-test\"",
+    "test-sauce": "node_modules/.bin/polymer test --plugin sauce --job-name \"body-json-editor:local-test\"",
     "test": "node_modules/.bin/polymer test --plugin local",
     "deps": "npm install --quiet && bower install --quiet",
     "update-deps": "npm update --quiet && bower update --quiet"
