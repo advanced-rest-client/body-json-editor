@@ -17,6 +17,7 @@ the License.
 <link rel="import" href="../paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../arc-icons/arc-icons.html">
 <link rel="import" href="../paper-tooltip/paper-tooltip.html">
+<link rel="import" href="../paper-autocomplete/paper-autocomplete.html">
 <link rel="import" href="primitive-value.html">
 <link rel="import" href="body-json-editor-behavior.html">
 <link rel="import" href="property-type-selector.html">
@@ -52,7 +53,7 @@ Custom property | Description | Default
 
       @apply --arc-font-body1;
       @apply --property-editor;
-      --paper-input-container-color: rgba(0, 0, 0, 0.24);
+      --paper-input-container-color: rgba(0, 0, 0, 0.54);
       --paper-dropdown-menu-input: {
         color: var(--property-editor-dropdown-menu-input-color, #673AB7);
       };
@@ -93,12 +94,15 @@ Custom property | Description | Default
 
     primitive-value,
     property-type-selector,
-    .key-input {
+    .key-input,
+    .key-name-container {
       @apply --layout-flex;
     }
 
-    .key-input {
+    .key-name-container {
       margin-right: 8px;
+      display: inline-block;
+      position: relative;
     }
 
     .array-items-label {
@@ -129,12 +133,15 @@ Custom property | Description | Default
 
     <div class="property-input">
       <template is="dom-if" if="[[!noKey]]">
-        <paper-input label="property name" class="key-input" no-label-float="[[!narrow]]" value="{{name}}"></paper-input>
+        <span class="key-name-container">
+          <paper-input id="keyInput" label="property name" class="key-input" no-label-float="[[!narrow]]" value="{{name}}"></paper-input>
+          <paper-autocomplete id="keyAutocomplete" source="[[dataModel.keys]]" open-on-focus></paper-autocomplete>
+        </span>
       </template>
 
       <div class="value-area">
         <template is="dom-if" if="[[model.isPrimitive]]" restamp>
-          <primitive-value narrow="[[narrow]]" value="{{value}}" model="{{model}}"></primitive-value>
+          <primitive-value narrow="[[narrow]]" value="{{value}}" model="{{model}}" value-suggestions="[[_computeValuesSuggestions(name, dataModel.valuesMapping)]]"></primitive-value>
         </template>
         <template is="dom-if" if="[[!model.hasType]]">
           <property-type-selector on-selected-changed="_updateType"></property-type-selector>
@@ -170,7 +177,7 @@ Custom property | Description | Default
       <section class="indent">
         <template is="dom-if" if="[[model.isObject]]" restamp>
           <template is="dom-repeat" items="{{model.properties}}">
-            <property-editor narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}"  on-remove-property="_removeSubProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
+            <property-editor data-object-property narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}" data-model="[[_computeProperyDataModel(name, dataModel.properties)]]" on-remove-property="_removeSubProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
           </template>
           <div class="add-action">
             <span>
@@ -187,7 +194,7 @@ Custom property | Description | Default
         </template>
         <template is="dom-if" if="[[model.isArray]]" restamp>
           <template is="dom-repeat" items="{{model.items}}">
-            <property-editor narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" on-remove-property="_removeSubProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
+            <property-editor data-array-property narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" data-model="[[_computeProperyDataModel(name, dataModel.properties)]]" on-remove-property="_removeSubProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
           </template>
           <div class="add-action">
             <paper-button class="action-button" on-tap="addProperty">Add item</paper-button>
@@ -204,12 +211,41 @@ Custom property | Description | Default
       // If set then the property name input is not rendered
       noKey: {
         type: Boolean,
-        value: false
+        value: false,
+        observer: '_noKeyChanged'
       },
       /**
        * When changing a type of this model it holds previous type name.
        */
-      _previousType: String
+      _previousType: String,
+      /**
+       * Computed value, true if the element can display autocomplete support
+       * for the name fiels.
+       */
+      hasNameAutofill: {
+        type: Boolean,
+        value: false,
+        computed: '_computeHasNameAutofill(dataModel.isObject, dataModel.keys)'
+      },
+      /**
+       * A type of last added item.
+       */
+      _lastAddedType: String
+    },
+
+    observers: [
+      '_nameChanged(hasNameAutofill, name, dataModel)'
+    ],
+
+    _noKeyChanged: function(noKey) {
+      if (noKey) {
+        return;
+      }
+      Polymer.RenderStatus.afterNextRender(this, function() {
+        var input = this.$$('#keyInput');
+        var autocomplete = this.$$('#keyAutocomplete');
+        autocomplete.target = input;
+      });
     },
     /**
      * Updates the type when value of the sype selector change.
@@ -233,6 +269,12 @@ Custom property | Description | Default
       m.type = type;
       var model = this._computeModelItem(m);
       this.set('model', model);
+      this._lastAddedType = type;
+      this.fire('last-used-type', {
+        value: type
+      }, {
+        bubbles: false
+      });
     },
     /**
      * Handler for the remove property button click.
@@ -250,7 +292,11 @@ Custom property | Description | Default
      */
     addProperty: function() {
       var hostModel = this.model;
-      var childModel = this._computeModelItem();
+      var base = {};
+      if (this._lastAddedType) {
+        base.type = this._lastAddedType;
+      }
+      var childModel = this._computeModelItem(base);
 
       var property;
       if (hostModel.isObject) {
@@ -296,6 +342,46 @@ Custom property | Description | Default
         property = 'items';
       }
       this.splice(['model', property], index, 1);
+    },
+    /**
+     * Computes if with current data model configuration the view can display
+     * names autocomplete.
+     */
+    _computeHasNameAutofill: function(isObject, keys) {
+      return !!(isObject && keys && keys.length);
+    },
+    /**
+     * Called when name of the property change.
+     * It sets property type and default value from data model, is available.
+     */
+    _nameChanged: function(hasNameAutofill, name, dataModel) {
+      if (!hasNameAutofill || !name || !dataModel) {
+        return;
+      }
+      if (dataModel.typesMapping && dataModel.typesMapping[name]) {
+        var type = dataModel.typesMapping[name];
+        this._updateModelType(type);
+      }
+      if (dataModel.defaultsMapping && dataModel.defaultsMapping[name]) {
+        var defaultValue = dataModel.defaultsMapping[name];
+        this.set('value', defaultValue);
+      }
+    },
+    /**
+     * Computes suggestions list for a value editor.
+     */
+    _computeValuesSuggestions: function(name, valuesMapping) {
+      if (!valuesMapping || !valuesMapping[name]) {
+        return;
+      }
+      return valuesMapping[name];
+    },
+
+    _computeProperyDataModel: function(name, list) {
+      if (name === undefined || !list || !list[name]) {
+        return;
+      }
+      return list[name];
     }
   });
   </script>

@@ -23,7 +23,8 @@ window.ArcBehaviors.BodyJsonEditorBehavior = {
   properties: {
     name: {
       type: String,
-      notify: true
+      notify: true,
+      value: ''
     },
 
     value: {
@@ -35,6 +36,8 @@ window.ArcBehaviors.BodyJsonEditorBehavior = {
       type: Object,
       notify: true
     },
+    // Data model for the view.
+    dataModel: Object,
     // Display form in the narrow layout
     narrow: {
       type: Boolean,

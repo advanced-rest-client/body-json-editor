@@ -68,7 +68,7 @@ See docs for other elements in the package for more styling options.
     </template>
     <template is="dom-if" if="[[model.isObject]]">
       <template is="dom-repeat" items="{{model.properties}}" id="object">
-        <property-editor narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
+        <property-editor narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}" data-model="[[dataModel]]" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject" on-last-used-type="_updateLastUsedType"></property-editor>
       </template>
       <div class="add-action">
         <paper-button class="action-button" on-tap="_addProperty">Add property</paper-button>
@@ -76,7 +76,7 @@ See docs for other elements in the package for more styling options.
     </template>
     <template is="dom-if" if="[[model.isArray]]">
       <template is="dom-repeat" items="{{model.items}}" id="array">
-        <property-editor narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
+        <property-editor narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" data-model="[[dataModel]]" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject" on-last-used-type="_updateLastUsedType"></property-editor>
       </template>
       <div class="add-action">
         <paper-button class="action-button" on-tap="_addItem">Add array item</paper-button>
@@ -115,7 +115,11 @@ See docs for other elements in the package for more styling options.
         type: Boolean,
         value: true,
         computed: '_computeModelNotSet(model)'
-      }
+      },
+      /**
+       * A type of last added item.
+       */
+      _lastAddedType: String
     },
 
     observers: [
@@ -138,20 +142,19 @@ See docs for other elements in the package for more styling options.
         return;
       }
       this._computeRamlBaseModel(type);
-      var model = this._computeDataModel(type);
+      var model = this.__computeDataModel(type);
       this._setDataModel(model);
     },
 
-    _computeDataModel: function(type) {
+    __computeDataModel: function(type) {
       if (!type) {
         return;
       }
       if (['object', 'array'].indexOf(type.type) === -1) {
         return;
       }
-      console.log(type);
-      var result = [];
-      // TODO: Compute a data model that can be used to autofill values.
+
+      var result = this._computeDataModel(type);
       return result;
     },
 
@@ -183,9 +186,13 @@ See docs for other elements in the package for more styling options.
     },
 
     __createItemType: function(type) {
-      var property = this._computeModelItem({
-        isRoot: false,
-      });
+      var base = {
+        isRoot: false
+      };
+      if (this._lastAddedType) {
+        base.type = this._lastAddedType;
+      }
+      var property = this._computeModelItem(base);
       var propertyName;
       if (type === 'object') {
         propertyName = 'properties';
@@ -203,7 +210,10 @@ See docs for other elements in the package for more styling options.
         this.push(['model', propertyName], property);
       }
     },
-
+    /**
+     * Removes a property from the view model.
+     * Called when editor element fires `remove-property` custom event.
+     */
     _removeProperty: function(e) {
       var index = e.model.get('index');
       var model = this.model;
@@ -219,7 +229,12 @@ See docs for other elements in the package for more styling options.
         this.splice(['model', property], index, 1);
       }
     },
-
+    /**
+     * Handles model change and creates a value.
+     * Note, this is async task and it's debounced for 10 ms because the model
+     * can notify change lot of times for single change (depending on the model
+     * structure).
+     */
     _modelChanged: function(opened, record) {
       if (!opened || !record || !record.path) {
         return;
@@ -228,11 +243,16 @@ See docs for other elements in the package for more styling options.
         return;
       }
       this.debounce('model-to-value', function() {
-        this._setValueFromValue();
+        this._setValueFromModel();
       }, 10);
     },
-
-    _setValueFromValue: function() {
+    /**
+     * Sets the `value` property as a result of computation of a value from
+     * current model.
+     * This sets `_internalValueChage` property that prevents computation of
+     * the model.
+     */
+    _setValueFromModel: function() {
       var model = this.model;
       var value = this._computeJson(model);
       value = JSON.stringify(value);
@@ -240,7 +260,12 @@ See docs for other elements in the package for more styling options.
       this.set('value', value);
       this._internalValueChage = false;
     },
-
+    /**
+     * Computes JavaScript object from the model as a representation of the
+     * value returned by this editor.
+     * @param {Array} model Current state of the model.
+     * @return {Object} JavaScript object computed from the model.
+     */
     _computeJson: function(model) {
       var result = model.isArray ? [] : {};
 
@@ -272,7 +297,29 @@ See docs for other elements in the package for more styling options.
       }, this);
       return result;
     },
-
+    /**
+     * Computes correct type of an object.
+     * All values in the model are string. This function deserializes values
+     * depending on `value` property of the model.
+     *
+     * For example, result of calling this function for the following model:
+     * ```
+     * {
+     *   type: integer,
+     *   value: "1235"
+     * }
+     * ```
+     *
+     * is:
+     *
+     * ```
+     * 1235 // typeof "number"
+     * ```
+     *
+     * @param {Object} model The model from which it takes `value` and `type`
+     * properties.
+     * @return {any} The `value` property but with type.
+     */
     _valueWithType: function(model) {
       var result;
       switch (model.type) {
@@ -302,81 +349,6 @@ See docs for other elements in the package for more styling options.
           result = model.value;
       }
 
-      return result;
-    },
-
-    /**
-     * Creates an internal model from the `object`.
-     * Object can be any JavaScript object.
-     *
-     * The result object have following strucure:
-     * - type {String} "object" or "array"
-     * - properties {Array<Object>} if the type is "object"
-     * - items {Array<Object>} if the type is "array"
-     *
-     * Then properties / items array contains a list of objects with following properties:
-     * - type {String} any permitted type like string, number, boolean, object and so on
-     * - name {String} name of the property
-     * - properties {Array<Object>} if the type is "object"
-     * - items {Array<Object>} if the type is "array"
-     * - value {String|Number|Boolean|null} if the type is neither "object" or "array"
-     *
-     * @param {Object|Array} object A source object to create a model from it.
-     * @param {String?} parentType A type of the parent object. If not set or if it value equals
-     * "array" then the resulting object will not contain the `name` property.
-     * @return {Object|undefined} A model of undefined if passed object is nullable.
-     */
-    _createModel: function(object, parentType) {
-      var result = {
-        type: 'object'
-      };
-      if (object === undefined) {
-        return result;
-      }
-
-      if (parentType && parentType !== 'array') {
-        result.name = '';
-      }
-      if (object instanceof Array) {
-        result.type = 'array';
-        var items = [];
-        object.forEach(function(item) {
-          var _m = this._createModel(item, 'array');
-          if (_m) {
-            items[items.length] = _m;
-          }
-        }, this);
-        result.items = items;
-      } else if (object instanceof Object) {
-        try {
-          var keys = Object.keys(object);
-          var properties = [];
-          keys.forEach(function(key) {
-            var _m = this._createModel(object[key], 'object');
-            if (_m) {
-              _m.name = key;
-              properties[properties.length] = _m;
-            }
-          }, this);
-          result.properties = properties;
-        } catch (e) {}
-      } else {
-        if (typeof object === 'string') {
-          result.type = 'string';
-          result.value = object;
-        } else if (typeof object === 'number') {
-          result.type = Number.isInteger(object) ? 'integer' : 'float';
-          result.value = object;
-        } else if (typeof object === 'boolean') {
-          result.type = 'boolean';
-          result.value = object;
-        } else if (object === null) {
-          result.type = 'null';
-          result.value = null;
-        } else {
-          return;
-        }
-      }
       return result;
     },
 
@@ -412,7 +384,12 @@ See docs for other elements in the package for more styling options.
       model.isRoot = true;
       return model;
     },
-
+    /**
+     * Computes a model for a property
+     * @param {Object} value RAML type definition
+     * @param {?String} key A key name for this type
+     * @return {Object} Computed mode for the type.
+     */
     _computeValueProperyModel: function(value, key) {
       var baseType = this._detectObjectType(value);
       var baseModel = this._computeModelItem({
@@ -439,7 +416,6 @@ See docs for other elements in the package for more styling options.
           baseModel.properties.push(_model);
         }, this);
       }
-
       return baseModel;
     },
 
@@ -473,6 +449,138 @@ See docs for other elements in the package for more styling options.
       }
       return 'object';
     },
+
+    _updateLastUsedType: function(e) {
+      this._lastAddedType = e.detail.value;
+    },
+
+    /**
+     * Computes the data model from the RAML type definition.
+     *
+     * TODO: Support union types.
+     *
+     * @param {Object} type RAML's type definition
+     * @return {Object} The data model.
+     */
+    _computeDataModel: function(type) {
+      if (!type) {
+        return;
+      }
+      var dataType = type.type;
+      switch (dataType) {
+        case 'object':
+        case 'enum':
+          return this._computeObjectDataModel(type);
+        case 'array':
+          return this._computeArrayDataModel(type);
+      }
+    },
+    /**
+     * Computes data model for an object.
+     * @param {Object} type RAML type definition.
+     * @return {Array} Model for the type.
+     */
+    _computeObjectDataModel: function(type) {
+      var result = {
+        defaultsMapping: {},
+        typesMapping: {},
+        keys: [],
+        valuesMapping: {},
+        type: type.type,
+        isArray: false,
+        isObject: true,
+        properties: {}
+      };
+
+      if (!type.properties || !type.properties.length) {
+        return result;
+      }
+      var typeProperties = type.properties;
+      for (var i = 0, size = typeProperties.length; i < size; i++) {
+        var property = typeProperties[i];
+        var key = property.key;
+        result.keys.push(key);
+        result.typesMapping[key] = property.type;
+
+        if (property.type !== 'object') {
+          var typeDefault = this._propertyDefault(property);
+          if (typeDefault) {
+            result.defaultsMapping[key] = typeDefault;
+          }
+          var typeValues = this._propertyValues(property);
+          if (typeValues && typeValues.length) {
+            result.valuesMapping[key] = typeValues;
+          }
+        }
+        var model = this._computeDataModel(property);
+        if (model) {
+          result.properties[key] = model;
+        }
+      }
+      return result;
+    },
+    /**
+     * Computes data model for an array.
+     * @param {Object} type RAML type definition.
+     * @return {Array} Model for the type.
+     */
+    _computeArrayDataModel: function(type) {
+      var result = {
+        types: [],
+        type: type.type,
+        isArray: true,
+        isObject: false
+      };
+
+      var items = type.items;
+      if (this._isArray(items)) {
+        items = items[0];
+      }
+      if (typeof items === 'string') {
+        result.types.push(items);
+        return result;
+      }
+      if (items.type) {
+        result.types.push(items.type);
+        if (items.type === 'object' && items.properties) {
+          result.properties = {
+            '': this._computeDataModel(items)
+          };
+        }
+      }
+
+      return result;
+    },
+    /**
+     * Computes a default value for a RAML type.
+     * @param {Object} type RAML type definition.
+     * @return {String} The default value if any.
+     */
+    _propertyDefault: function(type) {
+      if (type.default) {
+        return type.default;
+      }
+      if (type.required && type.examples) {
+        return type.examples[0];
+      }
+    },
+    /**
+     * Computes a list of possible values for the type.
+     * The list is computed from `default` and `examples` properties.
+     *
+     * @param {Object} type RAML type definition.
+     * @return {Array} List of all possible values.
+     */
+    _propertyValues: function(type) {
+      var result = [];
+      if (type.default) {
+        result.push(type.default);
+      }
+      if (type.examples) {
+        result = result.concat(type.examples);
+      }
+      return result;
+    }
   });
   </script>
 </dom-module>
