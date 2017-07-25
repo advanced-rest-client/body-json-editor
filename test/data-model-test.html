@@ -73,43 +73,43 @@ the License.
       });
 
       test('Computes type', function() {
-        assert.equal(element.dataModel.type, 'object');
+        assert.equal(element.typeModel.type, 'object');
       });
 
       test('Computes isObject', function() {
-        assert.isTrue(element.dataModel.isObject);
+        assert.isTrue(element.typeModel.isObject);
       });
 
       test('Computes isArray', function() {
-        assert.isFalse(element.dataModel.isArray);
+        assert.isFalse(element.typeModel.isArray);
       });
 
       test('Computes defaultsMapping', function() {
-        assert.typeOf(element.dataModel.defaultsMapping, 'object');
-        assert.equal(Object.keys(element.dataModel.defaultsMapping).length, 5);
+        assert.typeOf(element.typeModel.defaultsMapping, 'object');
+        assert.equal(Object.keys(element.typeModel.defaultsMapping).length, 5);
       });
 
       test('Computes typesMapping', function() {
-        assert.typeOf(element.dataModel.typesMapping, 'object');
-        assert.lengthOf(Object.keys(element.dataModel.typesMapping), 8);
+        assert.typeOf(element.typeModel.typesMapping, 'object');
+        assert.lengthOf(Object.keys(element.typeModel.typesMapping), 8);
       });
 
       test('Computes valuesMapping', function() {
-        assert.typeOf(element.dataModel.valuesMapping, 'object');
-        assert.lengthOf(Object.keys(element.dataModel.valuesMapping), 5);
+        assert.typeOf(element.typeModel.valuesMapping, 'object');
+        assert.lengthOf(Object.keys(element.typeModel.valuesMapping), 5);
       });
 
       test('Computes keys', function() {
-        assert.lengthOf(element.dataModel.keys, 8);
+        assert.lengthOf(element.typeModel.keys, 8);
       });
 
       test('Computes properties', function() {
-        assert.typeOf(element.dataModel.properties, 'object');
-        assert.lengthOf(Object.keys(element.dataModel.properties), 2);
+        assert.typeOf(element.typeModel.properties, 'object');
+        assert.lengthOf(Object.keys(element.typeModel.properties), 2);
       });
 
       test('Properties (object) are computed', function() {
-        var prop = element.dataModel.properties.objectable;
+        var prop = element.typeModel.properties.objectable;
         assert.isTrue(prop.isObject, 'isObject is set');
         assert.isTrue(prop.keys instanceof Array, 'Keys are array');
         assert.equal(prop.type, 'object');
@@ -120,7 +120,7 @@ the License.
       });
 
       test('Properties (object) are computed', function() {
-        var prop = element.dataModel.properties.arrable;
+        var prop = element.typeModel.properties.arrable;
         assert.isFalse(prop.isObject, 'isObject is set');
         assert.isTrue(prop.isArray, 'isArray is set');
         assert.isTrue(prop.types instanceof Array, 'types are array');

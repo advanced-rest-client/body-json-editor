@@ -135,13 +135,13 @@ Custom property | Description | Default
       <template is="dom-if" if="[[!noKey]]">
         <span class="key-name-container">
           <paper-input id="keyInput" label="property name" class="key-input" no-label-float="[[!narrow]]" value="{{name}}"></paper-input>
-          <paper-autocomplete id="keyAutocomplete" source="[[dataModel.keys]]" open-on-focus></paper-autocomplete>
+          <paper-autocomplete id="keyAutocomplete" source="[[typeModel.keys]]" open-on-focus></paper-autocomplete>
         </span>
       </template>
 
       <div class="value-area">
         <template is="dom-if" if="[[model.isPrimitive]]" restamp>
-          <primitive-value narrow="[[narrow]]" value="{{value}}" model="{{model}}" value-suggestions="[[_computeValuesSuggestions(name, dataModel.valuesMapping)]]"></primitive-value>
+          <primitive-value narrow="[[narrow]]" value="{{value}}" model="{{model}}" value-suggestions="[[_computeValuesSuggestions(name, typeModel.valuesMapping)]]"></primitive-value>
         </template>
         <template is="dom-if" if="[[!model.hasType]]">
           <property-type-selector on-selected-changed="_updateType"></property-type-selector>
@@ -177,7 +177,7 @@ Custom property | Description | Default
       <section class="indent">
         <template is="dom-if" if="[[model.isObject]]" restamp>
           <template is="dom-repeat" items="{{model.properties}}">
-            <property-editor data-object-property narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}" data-model="[[_computeProperyDataModel(name, dataModel.properties)]]" on-remove-property="_removeSubProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
+            <property-editor data-object-property narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}" type-model="[[_computeProperyTypeModel(name, typeModel.properties)]]" on-remove-property="_removeSubProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
           </template>
           <div class="add-action">
             <span>
@@ -194,7 +194,7 @@ Custom property | Description | Default
         </template>
         <template is="dom-if" if="[[model.isArray]]" restamp>
           <template is="dom-repeat" items="{{model.items}}">
-            <property-editor data-array-property narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" data-model="[[_computeProperyDataModel(name, dataModel.properties)]]" on-remove-property="_removeSubProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
+            <property-editor data-array-property narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" type-model="[[_computeProperyTypeModel(name, typeModel.properties)]]" on-remove-property="_removeSubProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
           </template>
           <div class="add-action">
             <paper-button class="action-button" on-tap="addProperty">Add item</paper-button>
@@ -225,7 +225,7 @@ Custom property | Description | Default
       hasNameAutofill: {
         type: Boolean,
         value: false,
-        computed: '_computeHasNameAutofill(dataModel.isObject, dataModel.keys)'
+        computed: '_computeHasNameAutofill(typeModel.isObject, typeModel.keys)'
       },
       /**
        * A type of last added item.
@@ -234,7 +234,7 @@ Custom property | Description | Default
     },
 
     observers: [
-      '_nameChanged(hasNameAutofill, name, dataModel)'
+      '_nameChanged(hasNameAutofill, name, typeModel)'
     ],
 
     _noKeyChanged: function(noKey) {
@@ -354,16 +354,16 @@ Custom property | Description | Default
      * Called when name of the property change.
      * It sets property type and default value from data model, is available.
      */
-    _nameChanged: function(hasNameAutofill, name, dataModel) {
-      if (!hasNameAutofill || !name || !dataModel) {
+    _nameChanged: function(hasNameAutofill, name, typeModel) {
+      if (!hasNameAutofill || !name || !typeModel) {
         return;
       }
-      if (dataModel.typesMapping && dataModel.typesMapping[name]) {
-        var type = dataModel.typesMapping[name];
+      if (typeModel.typesMapping && typeModel.typesMapping[name]) {
+        var type = typeModel.typesMapping[name];
         this._updateModelType(type);
       }
-      if (dataModel.defaultsMapping && dataModel.defaultsMapping[name]) {
-        var defaultValue = dataModel.defaultsMapping[name];
+      if (typeModel.defaultsMapping && typeModel.defaultsMapping[name]) {
+        var defaultValue = typeModel.defaultsMapping[name];
         this.set('value', defaultValue);
       }
     },
@@ -377,7 +377,7 @@ Custom property | Description | Default
       return valuesMapping[name];
     },
 
-    _computeProperyDataModel: function(name, list) {
+    _computeProperyTypeModel: function(name, list) {
       if (name === undefined || !list || !list[name]) {
         return;
       }

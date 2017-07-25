@@ -68,7 +68,7 @@ See docs for other elements in the package for more styling options.
     </template>
     <template is="dom-if" if="[[model.isObject]]">
       <template is="dom-repeat" items="{{model.properties}}" id="object">
-        <property-editor narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}" data-model="[[dataModel]]" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject" on-last-used-type="_updateLastUsedType"></property-editor>
+        <property-editor narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}" type-model="[[typeModel]]" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject" on-last-used-type="_updateLastUsedType"></property-editor>
       </template>
       <div class="add-action">
         <paper-button class="action-button" on-tap="_addProperty">Add property</paper-button>
@@ -76,7 +76,7 @@ See docs for other elements in the package for more styling options.
     </template>
     <template is="dom-if" if="[[model.isArray]]">
       <template is="dom-repeat" items="{{model.items}}" id="array">
-        <property-editor narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" data-model="[[dataModel]]" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject" on-last-used-type="_updateLastUsedType"></property-editor>
+        <property-editor narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" type-model="[[typeModel]]" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject" on-last-used-type="_updateLastUsedType"></property-editor>
       </template>
       <div class="add-action">
         <paper-button class="action-button" on-tap="_addItem">Add array item</paper-button>
@@ -106,7 +106,7 @@ See docs for other elements in the package for more styling options.
        * A data model for autocomplete functions generated from `schema` or
        * `raml` property.
        */
-      dataModel: {
+      typeModel: {
         type: Object,
         readOnly: true
       },
@@ -142,11 +142,11 @@ See docs for other elements in the package for more styling options.
         return;
       }
       this._computeRamlBaseModel(type);
-      var model = this.__computeDataModel(type);
-      this._setDataModel(model);
+      var model = this.__computeTypeModel(type);
+      this._setTypeModel(model);
     },
 
-    __computeDataModel: function(type) {
+    __computeTypeModel: function(type) {
       if (!type) {
         return;
       }
@@ -154,7 +154,7 @@ See docs for other elements in the package for more styling options.
         return;
       }
 
-      var result = this._computeDataModel(type);
+      var result = this._computeTypeModel(type);
       return result;
     },
 
@@ -465,7 +465,7 @@ See docs for other elements in the package for more styling options.
      * @param {Object} type RAML's type definition
      * @return {Object} The data model.
      */
-    _computeDataModel: function(type) {
+    _computeTypeModel: function(type) {
       if (!type) {
         return;
       }
@@ -473,9 +473,9 @@ See docs for other elements in the package for more styling options.
       switch (dataType) {
         case 'object':
         case 'enum':
-          return this._computeObjectDataModel(type);
+          return this._computeObjectTypeModel(type);
         case 'array':
-          return this._computeArrayDataModel(type);
+          return this._computeArrayTypeModel(type);
       }
     },
     /**
@@ -483,7 +483,7 @@ See docs for other elements in the package for more styling options.
      * @param {Object} type RAML type definition.
      * @return {Array} Model for the type.
      */
-    _computeObjectDataModel: function(type) {
+    _computeObjectTypeModel: function(type) {
       var result = {
         defaultsMapping: {},
         typesMapping: {},
@@ -519,7 +519,7 @@ See docs for other elements in the package for more styling options.
             result.valuesMapping[key] = typeValues;
           }
         }
-        var model = this._computeDataModel(property);
+        var model = this._computeTypeModel(property);
         if (model) {
           result.properties[key] = model;
         }
@@ -531,7 +531,7 @@ See docs for other elements in the package for more styling options.
      * @param {Object} type RAML type definition.
      * @return {Array} Model for the type.
      */
-    _computeArrayDataModel: function(type) {
+    _computeArrayTypeModel: function(type) {
       var result = {
         types: [],
         type: type.type,
@@ -551,7 +551,7 @@ See docs for other elements in the package for more styling options.
         result.types.push(items.type);
         if (items.type === 'object' && items.properties) {
           result.properties = {
-            '': this._computeDataModel(items)
+            '': this._computeTypeModel(items)
           };
         }
       }
