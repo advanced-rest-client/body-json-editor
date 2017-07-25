@@ -424,25 +424,28 @@ See docs for other elements in the package for more styling options.
      * @return {String} type of object.
      */
     _detectObjectType: function(obj) {
-      if (obj === undefined) {
+      if (obj === undefined || obj === null) {
         return 'null';
       }
       var type = typeof obj;
-      if (type !== 'object') {
-        if (type === 'string') {
+      switch (type) {
+        case 'number':
+          if (!Number.isInteger(obj)) {
+            return 'float';
+          }
+          return type;
+        case 'string':
           var _test = Number(obj);
           if (_test !== _test) {
+            // not a number
             return type;
           }
-          _test = Number(obj);
-          if (_test === _test) {
-            return 'number';
+          if (!Number.isInteger(_test)) {
+            return 'float';
           }
-        }
-        return type;
-      }
-      if (obj === null) {
-        return 'null';
+          return 'number';
+        case 'boolean':
+          return type;
       }
       if (this._isArray(obj)) {
         return 'array';
