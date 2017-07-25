@@ -77,62 +77,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       </template>
     </arc-demo-snippet>
 
-    <h3>Object editor with type definition (RAML type)</h3>
-    <arc-demo-snippet>
-      <template>
-        <body-json-editor></body-json-editor>
-        <output></output>
-        <script>
-        var json = document.querySelectorAll('body-json-editor')[2];
-        json.addEventListener('value-changed', function(e) {
-          document.querySelectorAll('output')[2].innerHTML = e.detail.value;
-        });
-        json.type = {
-          type: 'object',
-          properties: [{
-            type: 'string',
-            key: 'message',
-            description: 'The message body to send'
-          }, {
-            type: 'object',
-            key: 'to',
-            properties: [{
-              type: 'string',
-              key: 'name',
-              description: 'Messsage receiver',
-              required: true
-            }, {
-              type: 'string',
-              key: 'email',
-              description: 'Person email',
-              required: true
-            }]
-          }, {
-            type: 'array',
-            key: 'tags',
-            description: 'Message tags.',
-            items: [{
-              type: 'string',
-            }]
-          }]
-        };
-        </script>
-      </template>
-    </arc-demo-snippet>
-
     <h3>Narrow layout</h3>
     <arc-demo-snippet json='{"test": "value", "numeric": 1234, "float": 1234.5678, "boolean": true, "nullable": null, "empty":""}'>
       <template>
         <body-json-editor narrow value="[[json]]"></body-json-editor>
         <output></output>
         <script>
-        var json = document.querySelectorAll('body-json-editor')[3];
+        var json = document.querySelectorAll('body-json-editor')[2];
         json.addEventListener('value-changed', function(e) {
-          document.querySelectorAll('output')[3].innerHTML = e.detail.value;
+          document.querySelectorAll('output')[2].innerHTML = e.detail.value;
         });
         </script>
       </template>
     </arc-demo-snippet>
+
+    <h3>With RAML type</h3>
+    <a href="raml.html">See demo page</a>
   </div>
 </body>
 </html>

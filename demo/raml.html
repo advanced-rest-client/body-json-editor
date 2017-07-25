@@ -23,6 +23,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <link rel="import" href="../body-json-editor.html">
   <link rel="import" href="../../font-roboto/roboto.html">
   <style is="custom-style">
+  :root {
+    --raml-path-selector: {
+      background: #f5f5f5;
+    };
+  }
   html,
   body {
     margin: 0;
@@ -33,6 +38,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
+    background-color: #F5F5F5;
+  }
+
+  .element-view {
+    background-color: #fff;
+    margin: 12px;
+    padding: 12px;
+    border-radius: 2px;
   }
   </style>
 </head>
@@ -58,9 +71,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             </template>
           </section>
           <section class="docs-body-parameters-table-content">
-            <body-json-editor raml-type="[[selectedBody]]"></body-json-editor>
+            <div class="element-view">
+              <body-json-editor raml-type="[[selectedBody]]"></body-json-editor>
+            </div>
           </section>
-          <p hidden$="[[hasBody]]">Selected method does not have the <b>body</b> property.</p>
         </template>
         <p hidden$="[[isMethod]]">Select a method</p>
       </div>
