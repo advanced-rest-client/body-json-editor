@@ -53,7 +53,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <body unresolved>
   <template is="dom-bind" id="app">
     <raml-demo-page selected-object="{{selected}}" narrow="{{narrow}}" is-method="{{isMethod}}">
-      <h1>The raml-request-panel element</h1>
+      <paper-item data-url$="[[testRaml]]">Test case</paper-item>
+      <h1>The body-json-editor element</h1>
       <div main>
         <template is="dom-if" if="[[!hasOptions]]">
           <p>Selected method does not have the <b>body</b> or <b>response.body</b> property.</p>
@@ -131,9 +132,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
     var ramlRoot = location.protocol + '//' + location.host +
       path.replace('demo', 'test');
-    scope.testRaml = ramlRoot + 'docs-body-parameters-table.raml';
-    scope.testArrayRaml = ramlRoot + 'docs-body-array-parameters-table.raml';
-    scope.testSchemaRaml = ramlRoot + 'schema.raml';
+    scope.testRaml = ramlRoot + 'test.raml';
   })(document.getElementById('app'));
   </script>
 </body>
