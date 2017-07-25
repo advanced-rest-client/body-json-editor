@@ -82,11 +82,11 @@ window.ArcBehaviors.BodyJsonEditorBehavior = {
       case result.isNumber:
         result.inputType = 'number';
         switch (result.type) {
-          case 'number':
           case 'float':
             result.inputStep = 0.00001;
             break;
           case 'integer':
+          case 'number':
             result.inputStep = 1;
             break;
         }
