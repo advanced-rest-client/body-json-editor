@@ -13,7 +13,7 @@
     "body-json-editor.html",
     "property-editor.html",
     "primitive-value.html",
-    "property-type-selector.html"
+    "property-type-selector.html",
     "body-json-editor-behavior.html"
   ],
   "repository": {
