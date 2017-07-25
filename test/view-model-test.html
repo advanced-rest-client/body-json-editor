@@ -1,0 +1,302 @@
+<!doctype html>
+<!--
+@license
+Copyright 2017 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="../body-json-editor.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <body-json-editor></body-json-editor>
+      </template>
+    </test-fixture>
+
+    <script>
+    /* global fixture, assert */
+    suite('View model', function() {
+      suite('Object computation', function() {
+        var sourceObject = {
+          id: 1234,
+          name: 'test-string',
+          float: 123.456,
+          nullable: null,
+          boolean: true,
+          date: '2017-07-25T14:32:32.344Z',
+          objectable: {
+            key: 'test-objectable',
+            value: 'value-objectable',
+            numerable: 1552
+          },
+          arrable: [
+            'string',
+            12345,
+            false,
+            null,
+            {
+              test: true
+            }
+          ]
+        };
+
+        var element;
+        var model;
+        setup(function() {
+          element = fixture('basic');
+          element.value = JSON.stringify(sourceObject);
+          model = element.model;
+        });
+
+        suite('Model base', function() {
+          test('Computed hasType', function() {
+            assert.isTrue(model.hasType);
+          });
+
+          test('Computed isArray', function() {
+            assert.isFalse(model.isArray);
+          });
+
+          test('Computed isBoolean', function() {
+            assert.isFalse(model.isBoolean);
+          });
+
+          test('Computed isDate', function() {
+            assert.isFalse(model.isDate);
+          });
+
+          test('Computed isEnum', function() {
+            assert.isFalse(model.isEnum);
+          });
+
+          test('Computed isNull', function() {
+            assert.isFalse(model.isNull);
+          });
+
+          test('Computed isNumber', function() {
+            assert.isFalse(model.isNumber);
+          });
+
+          test('Computed isPrimitive', function() {
+            assert.isFalse(model.isPrimitive);
+          });
+
+          test('Computed isString', function() {
+            assert.isFalse(model.isString);
+          });
+
+          test('Computed isRoot', function() {
+            assert.isTrue(model.isRoot);
+          });
+
+          test('Computed isObject', function() {
+            assert.isTrue(model.isObject);
+          });
+
+          test('Computed isComplex', function() {
+            assert.isTrue(model.isComplex);
+          });
+
+          test('Type is object', function() {
+            assert.equal(model.type, 'object');
+          });
+
+          test('Properties are computed', function() {
+            assert.typeOf(model.properties, 'array', 'Properties are array');
+            assert.lengthOf(model.properties, Object.keys(sourceObject).length,
+              'Number of properties equals to source object properties length');
+          });
+        });
+
+        suite('Number property', function() {
+          setup(function() {
+            suite('Number property runner', function() {
+              var item = model.properties[0];
+              [
+                ['hasType', true],
+                ['isComplex', false],
+                ['isObject', false],
+                ['isPrimitive', true],
+                ['isString', false],
+                ['isNumber', true],
+                ['value', 1234],
+                ['name', 'id'],
+                ['inputType', 'number'],
+                ['type', 'number'],
+                ['inputStep', 1]
+              ].forEach(function(vars) {
+                test('Computed ' + vars[0], function() {
+                  assert.strictEqual(item[vars[0]], vars[1]);
+                });
+              });
+            });
+          });
+          test('This is a required placeholder to allow before() to work', function() {});
+        });
+
+        suite('String property', function() {
+          setup(function() {
+            suite('String property runner', function() {
+              var item = model.properties[1];
+              [
+                ['hasType', true],
+                ['isComplex', false],
+                ['isObject', false],
+                ['isPrimitive', true],
+                ['isString', true],
+                ['value', 'test-string'],
+                ['name', 'name'],
+                ['inputType', 'text'],
+                ['type', 'string']
+              ].forEach(function(vars) {
+                test('Computed ' + vars[0], function() {
+                  assert.strictEqual(item[vars[0]], vars[1]);
+                });
+              });
+            });
+          });
+          test('This is a required placeholder to allow before() to work', function() {});
+        });
+
+        suite('Float property', function() {
+          setup(function() {
+            suite('Float property runner', function() {
+              var item = model.properties[2];
+              [
+                ['hasType', true],
+                ['isComplex', false],
+                ['isObject', false],
+                ['isPrimitive', true],
+                ['isString', false],
+                ['isNumber', true],
+                ['value', 123.456],
+                ['name', 'float'],
+                ['inputType', 'number'],
+                ['type', 'float'],
+                ['inputStep', 0.00001]
+              ].forEach(function(vars) {
+                test('Computed ' + vars[0], function() {
+                  assert.strictEqual(item[vars[0]], vars[1]);
+                });
+              });
+            });
+          });
+          test('This is a required placeholder to allow before() to work', function() {});
+        });
+
+        suite('Nullable property', function() {
+          setup(function() {
+            suite('Nullable property runner', function() {
+              var item = model.properties[3];
+              [
+                ['hasType', true],
+                ['isComplex', false],
+                ['isObject', false],
+                ['isPrimitive', true],
+                ['isString', false],
+                ['isNull', true],
+                ['name', 'nullable'],
+                ['type', 'null']
+              ].forEach(function(vars) {
+                test('Computed ' + vars[0], function() {
+                  assert.strictEqual(item[vars[0]], vars[1]);
+                });
+              });
+            });
+          });
+          test('This is a required placeholder to allow before() to work', function() {});
+        });
+
+        suite('Boolean property', function() {
+          setup(function() {
+            suite('Boolean property runner', function() {
+              var item = model.properties[4];
+              [
+                ['hasType', true],
+                ['isComplex', false],
+                ['isObject', false],
+                ['isPrimitive', true],
+                ['isString', false],
+                ['isBoolean', true],
+                ['name', 'boolean'],
+                ['type', 'boolean'],
+                ['value', 'true']
+              ].forEach(function(vars) {
+                test('Computed ' + vars[0], function() {
+                  assert.strictEqual(item[vars[0]], vars[1]);
+                });
+              });
+            });
+          });
+          test('This is a required placeholder to allow before() to work', function() {});
+        });
+
+        // This is not yet supported.
+        suite('Date property', function() {
+          test('Computes pattern');
+        });
+
+        suite('Object property', function() {
+          setup(function() {
+            suite('Object property runner', function() {
+              var item = model.properties[6];
+              [
+                ['hasType', true],
+                ['isComplex', true],
+                ['isObject', true],
+                ['isPrimitive', false],
+                ['name', 'objectable'],
+                ['type', 'object']
+              ].forEach(function(vars) {
+                test('Computed ' + vars[0], function() {
+                  assert.strictEqual(item[vars[0]], vars[1]);
+                });
+              });
+            });
+          });
+          test('This is a required placeholder to allow before() to work', function() {});
+        });
+
+        suite('Array property', function() {
+          setup(function() {
+            suite('Array property runner', function() {
+              var item = model.properties[7];
+              [
+                ['hasType', true],
+                ['isComplex', true],
+                ['isObject', false],
+                ['isArray', true],
+                ['isPrimitive', false],
+                ['name', 'arrable'],
+                ['type', 'array']
+              ].forEach(function(vars) {
+                test('Computed ' + vars[0], function() {
+                  assert.strictEqual(item[vars[0]], vars[1]);
+                });
+              });
+            });
+          });
+          test('This is a required placeholder to allow before() to work', function() {});
+        });
+
+      });
+    });
+    </script>
+
+  </body>
+</html>

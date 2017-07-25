@@ -18,6 +18,7 @@
   "globals": {
     "Polymer": true,
     "ArcBehaviors": true,
-    "console": true
+    "console": true,
+    "Promise": true
   }
 }
