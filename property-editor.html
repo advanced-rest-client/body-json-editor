@@ -43,7 +43,8 @@ Custom property | Description | Default
 
 @group UI Elements
 @element property-editor
-@demo demo/index.html
+@demo demo/index.html Regular use of the element
+@demo demo/raml.html Use of the element with RAML type
 -->
 <dom-module id="property-editor">
   <template>
@@ -108,6 +109,10 @@ Custom property | Description | Default
     .array-items-label {
       color: var(--property-editor-array-label-color, rgba(0, 0, 0, 0.74));
       @apply --property-editor-array-label;
+    }
+
+    paper-autocomplete {
+      top: var(--body-json-editor-autocomplete-top, 34px);
     }
 
     :host([narrow]) .property-input {
