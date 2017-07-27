@@ -84,9 +84,13 @@ Custom property | Description | Default
       font-style: italic;
       color: var(--code-type-null-value-color, #4A148C);
     }
+
+    paper-autocomplete {
+      top: var(--body-json-editor-autocomplete-top, 34px);
+    }
     </style>
     <template is="dom-if" if="[[model.isEnum]]">
-      <paper-dropdown-menu label="Select value" required="[[model.required]]">
+      <paper-dropdown-menu label="Select value" required="[[model.required]]" no-label-float="[[!narrow]]">
         <paper-listbox class="dropdown-content" attr-for-selected="data-value" selected="{{value}}">
           <template is="dom-repeat" items="[[model.enum]]">
             <paper-item data-value$="[[item]]">[[item]]</paper-item>
