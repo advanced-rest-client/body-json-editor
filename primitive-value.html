@@ -96,7 +96,7 @@ Custom property | Description | Default
     </template>
 
     <template is="dom-if" if="[[model.isBoolean]]">
-      <paper-dropdown-menu label="Select boolean value" required="[[model.required]]" class="boolean-input">
+      <paper-dropdown-menu label="Select boolean value" required="[[model.required]]" class="boolean-input" no-label-float="[[!narrow]]">
         <paper-listbox class="dropdown-content" attr-for-selected="data-value" selected="{{value}}">
           <paper-item data-value="true">True</paper-item>
           <paper-item data-value="false">False</paper-item>
@@ -123,7 +123,8 @@ Custom property | Description | Default
           max="[[model.maximum]]"
           maxlength="[[model.maxLength]]"
           minlength="[[model.minLength]]"
-          step="[[model.inputStep]]"></paper-input>
+          step="[[model.inputStep]]"
+          no-label-float="[[!narrow]]"></paper-input>
         <paper-autocomplete id="valueAutocomplete" source="[[valueSuggestions]]" open-on-focus></paper-autocomplete>
       </span>
     </template>
@@ -135,7 +136,10 @@ Custom property | Description | Default
       behaviors: [ArcBehaviors.BodyJsonEditorBehavior],
 
       properties: {
-        narrow: Boolean,
+        narrow: {
+          type: Boolean,
+          value: false
+        },
         // Computed value, if true then regular input will be displayed.
         displayInput: {
           type: Boolean,
