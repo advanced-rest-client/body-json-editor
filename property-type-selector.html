@@ -36,7 +36,8 @@ Custom property | Description | Default
 
 @group UI Elements
 @element property-type-selector
-@demo demo/index.html
+@demo demo/index.html Regular use of the element
+@demo demo/raml.html Use of the element with RAML type
 -->
 <dom-module id="property-type-selector">
   <template>
@@ -50,7 +51,7 @@ Custom property | Description | Default
       @apply --layout-flex;
     }
     </style>
-    <paper-dropdown-menu label="Select type">
+    <paper-dropdown-menu label="Select type" no-label-float>
       <paper-listbox class="dropdown-content" attr-for-selected="data-value" selected="{{selected}}">
         <paper-item data-value="string">String</paper-item>
         <paper-item data-value="float">Float</paper-item>
