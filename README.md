@@ -24,6 +24,7 @@ Custom property | Description | Default
 ----------------|-------------|----------
 `--body-json-editor` | Mixin applied to the element | `{}`
 `--body-json-editor-action-button` | Mixin applied to the action buttons | ``
+`--body-json-editor-autocomplete-top` | CSS top property for autocomplete elements | `32px`
 
 See docs for other elements in the package for more styling options.
 

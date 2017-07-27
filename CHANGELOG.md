@@ -1,3 +1,16 @@
+<a name="0.2.2"></a>
+## [0.2.2](https://github.com/advanced-rest-client/body-json-editor/compare/0.2.1...0.2.2) (2017-07-27)
+
+
+### Update
+
+* Added variable to position autocomplete element ([7a0b734b43a35d599bc04a026e8b912c4dfd1e76](https://github.com/advanced-rest-client/body-json-editor/commit/7a0b734b43a35d599bc04a026e8b912c4dfd1e76))
+* Forcin `no-label-float` property on inputs. ([2eb9bc4fee9d2058ce257c014c9eca1bc74ee669](https://github.com/advanced-rest-client/body-json-editor/commit/2eb9bc4fee9d2058ce257c014c9eca1bc74ee669))
+* Updated dependency version for the enhancer. ([4c1810ba773e32e3f5798a05b129c316dbda90d5](https://github.com/advanced-rest-client/body-json-editor/commit/4c1810ba773e32e3f5798a05b129c316dbda90d5))
+* Updated metadata to point to all demo pages. ([f18583e926f166ef82d3c936a00214f169a6f967](https://github.com/advanced-rest-client/body-json-editor/commit/f18583e926f166ef82d3c936a00214f169a6f967))
+
+
+
 <a name="0.2.1"></a>
 ## [0.2.1](https://github.com/advanced-rest-client/body-json-editor/compare/0.1.7...0.2.1) (2017-07-25)
 
