@@ -25,6 +25,10 @@ Custom property | Description | Default
 `--body-json-editor` | Mixin applied to the element | `{}`
 `--body-json-editor-action-button` | Mixin applied to the action buttons | ``
 `--body-json-editor-autocomplete-top` | CSS top property for autocomplete elements | `32px`
+`--body-json-editor-action-icon-color` | Color of the add action icon button | `--secondary-button-color` or `--accent-color`
+`--body-json-editor-action-icon-color-hover` | Theme variable, color of the action icon button when hovered | `--secondary-button-color` or `--accent-color`
+`--body-json-editor-action-icon-opacity` | Opacity of the add action icon button | `0.54`
+`--body-json-editor-action-icon-opacity-hover` | Opacity of the add action icon button when hovered | `0.74`
 
 See docs for other elements in the package for more styling options.
 
@@ -48,6 +52,10 @@ Custom property | Description | Default
 `--property-editor-array-label-color` | Color of the "array" item label. | `rgba(0, 0, 0, 0.74)`
 `--property-editor-array-label` | Mixin applied to the "array" item label. | ``
 `--property-editor-narrow-margin-bottom` | Margin bottom of each editor property when in narrow view | `12px`
+`--body-json-editor-action-icon-color` | Color of the add action icon button | `--secondary-button-color` or `--accent-color`
+`--body-json-editor-action-icon-color-hover` | Theme variable, color of the action icon button when hovered | `--secondary-button-color` or `--accent-color`
+`--body-json-editor-action-icon-opacity` | Opacity of the add action icon button | `0.54`
+`--body-json-editor-action-icon-opacity-hover` | Opacity of the add action icon button when hovered | `0.74`
 
 # primitive-value
 
@@ -75,5 +83,9 @@ The `property-type-selector` provides UI to change UI model element type.
 
 Custom property | Description | Default
 ----------------|-------------|----------
-`--property-type-selector` | Mixin applied to the element. | `{}`,
+`--property-type-selector` | Mixin applied to the element. | `{}`
+`--property-type-selector-dropdown` | Mixin applied to the dropdown menu element | `{}`
+`--property-type-selector-dropdown-list` | Mixin applied to the dropdown menu list element | `{}`
+`--property-type-selector-dropdown-list-item` | Mixin applied to the menu list item element | `{}`
+`--property-type-selector-dropdown-list-item-hover` | Mixin applied to the menu list item element when hovering | `{}`
 

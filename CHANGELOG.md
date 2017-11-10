@@ -1,3 +1,23 @@
+<a name="0.2.4"></a>
+## [0.2.4](https://github.com/advanced-rest-client/body-json-editor/compare/0.2.2...0.2.4) (2017-11-10)
+
+
+### Fix
+
+* Fixed linter errors ([32e04bb7823cf4e82b93089175ef7e4931504b43](https://github.com/advanced-rest-client/body-json-editor/commit/32e04bb7823cf4e82b93089175ef7e4931504b43))
+
+### New
+
+* Adding icons to add buttons to make it consistent accrss elements ([45e7957b20fcf27c7adafbc9c9dc1be761e713be](https://github.com/advanced-rest-client/body-json-editor/commit/45e7957b20fcf27c7adafbc9c9dc1be761e713be))
+
+### Update
+
+* Added variables for this special kind of dropdown menu. ([d2168ca5af24f300b5ed3e529a094ae2e1bf29b5](https://github.com/advanced-rest-client/body-json-editor/commit/d2168ca5af24f300b5ed3e529a094ae2e1bf29b5))
+* Adding package lock files ([af3ea56ad3b950de4307a0c125c645fb765bfee9](https://github.com/advanced-rest-client/body-json-editor/commit/af3ea56ad3b950de4307a0c125c645fb765bfee9))
+* Updating polymer rules. ([fb00490e894ed26fd258e15aa22e98fe66dc67ba](https://github.com/advanced-rest-client/body-json-editor/commit/fb00490e894ed26fd258e15aa22e98fe66dc67ba))
+
+
+
 <a name="0.2.3"></a>
 ## [0.2.3](https://github.com/advanced-rest-client/body-json-editor/compare/0.2.2...0.2.3) (2017-07-27)
 
