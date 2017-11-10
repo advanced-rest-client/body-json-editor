@@ -40,6 +40,10 @@ Custom property | Description | Default
 `--property-editor-array-label-color` | Color of the "array" item label. | `rgba(0, 0, 0, 0.74)`
 `--property-editor-array-label` | Mixin applied to the "array" item label. | ``
 `--property-editor-narrow-margin-bottom` | Margin bottom of each editor property when in narrow view | `12px`
+`--body-json-editor-action-icon-color` | Color of the add action icon button | `--secondary-button-color` or `--accent-color`
+`--body-json-editor-action-icon-color-hover` | Theme variable, color of the action icon button when hovered | `--secondary-button-color` or `--accent-color`
+`--body-json-editor-action-icon-opacity` | Opacity of the add action icon button | `0.54`
+`--body-json-editor-action-icon-opacity-hover` | Opacity of the add action icon button when hovered | `0.74`
 
 @group UI Elements
 @element property-editor
@@ -70,8 +74,31 @@ Custom property | Description | Default
     }
 
     .action-button {
-      color: var(--primary-color);
+      color: var(--body-json-editor-action-button-color, var(--secondary-button-color, --accent-color));
+      background: var(--body-json-editor-action-button-background, var(--secondary-button-background, #fff));
+      transition: opacity 0.2s ease-in-out, color 0.2s ease-in-out;
+      @apply --secondary-button;
       @apply --body-json-editor-action-button;
+    }
+
+    .action-button:hover {
+      color: var(--body-json-editor-action-button-color-hover, var(--secondary-button-color, --accent-color));
+      background: var(--body-json-editor-action-button-background-hover, var(--secondary-button-background, #fff));
+      @apply --secondary-button-hover;
+      @apply --body-json-editor-action-button-hover;
+    }
+
+    .action-icon {
+      margin-right: 8px;
+      color: var(--body-json-editor-action-icon-color, var(--secondary-button-color, --accent-color));
+      opacity: var(--body-json-editor-action-icon-opacity, 0.54);
+      transition: opacity 0.2s ease-in-out, color 0.2s ease-in-out;
+    }
+
+    .action-button:hover .action-icon,
+    .action-icon:hover {
+      color: var(--body-json-editor-action-icon-color-hover, var(--secondary-button-color, --accent-color));
+      opacity: var(--body-json-editor-action-icon-opacity-hover, 0.74);
     }
 
     paper-icon-button {
@@ -187,7 +214,10 @@ Custom property | Description | Default
           </template>
           <div class="add-action">
             <span>
-              <paper-button class="action-button" on-tap="addProperty">Add property</paper-button>
+              <paper-button class="action-button" on-tap="addProperty">
+                <iron-icon class="action-icon" icon="arc:add-circle-outline"></iron-icon>
+                Add property
+              </paper-button>
               <paper-tooltip animation-delay="200">Add new object property</paper-tooltip>
             </span>
             <template is="dom-if" if="[[noKey]]">
@@ -203,7 +233,10 @@ Custom property | Description | Default
             <property-editor data-array-property narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" type-model="[[_computeProperyTypeModel(name, typeModel.properties)]]" on-remove-property="_removeSubProperty" on-duplicate-property="_onDuplicateObject"></property-editor>
           </template>
           <div class="add-action">
-            <paper-button class="action-button" on-tap="addProperty">Add item</paper-button>
+            <paper-button class="action-button" on-tap="addProperty">
+              <iron-icon class="action-icon" icon="arc:add-circle-outline"></iron-icon>
+              Add item
+            </paper-button>
           </div>
         </template>
       </section>

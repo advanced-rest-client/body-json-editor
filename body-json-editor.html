@@ -15,6 +15,8 @@ the License.
 <link rel="import" href="../paper-button/paper-button.html">
 <link rel="import" href="../request-payload-editor-behavior/request-payload-editor-behavior.html">
 <link rel="import" href="../arc-polyfills/arc-polyfills.html">
+<link rel="import" href="../iron-icon/iron-icon.html">
+<link rel="import" href="../arc-icons/arc-icons.html">
 <link rel="import" href="body-json-editor-behavior.html">
 <link rel="import" href="property-editor.html">
 <!--
@@ -41,6 +43,10 @@ Custom property | Description | Default
 `--body-json-editor` | Mixin applied to the element | `{}`
 `--body-json-editor-action-button` | Mixin applied to the action buttons | ``
 `--body-json-editor-autocomplete-top` | CSS top property for autocomplete elements | `32px`
+`--body-json-editor-action-icon-color` | Color of the add action icon button | `--secondary-button-color` or `--accent-color`
+`--body-json-editor-action-icon-color-hover` | Theme variable, color of the action icon button when hovered | `--secondary-button-color` or `--accent-color`
+`--body-json-editor-action-icon-opacity` | Opacity of the add action icon button | `0.54`
+`--body-json-editor-action-icon-opacity-hover` | Opacity of the add action icon button when hovered | `0.74`
 
 See docs for other elements in the package for more styling options.
 
@@ -58,8 +64,31 @@ See docs for other elements in the package for more styling options.
     }
 
     .action-button {
-      color: var(--primary-color);
+      color: var(--body-json-editor-action-button-color, var(--secondary-button-color, --accent-color));
+      background: var(--body-json-editor-action-button-background, var(--secondary-button-background, #fff));
+      transition: opacity 0.2s ease-in-out, color 0.2s ease-in-out;
+      @apply --secondary-button;
       @apply --body-json-editor-action-button;
+    }
+
+    .action-button:hover {
+      color: var(--body-json-editor-action-button-color-hover, var(--secondary-button-color, --accent-color));
+      background: var(--body-json-editor-action-button-background-hover, var(--secondary-button-background, #fff));
+      @apply --secondary-button-hover;
+      @apply --body-json-editor-action-button-hover;
+    }
+
+    .action-icon {
+      margin-right: 8px;
+      color: var(--body-json-editor-action-icon-color, var(--secondary-button-color, --accent-color));
+      opacity: var(--body-json-editor-action-icon-opacity, 0.54);
+      transition: opacity 0.2s ease-in-out, color 0.2s ease-in-out;
+    }
+
+    .action-button:hover .action-icon,
+    .action-icon:hover {
+      color: var(--body-json-editor-action-icon-color-hover, var(--secondary-button-color, --accent-color));
+      opacity: var(--body-json-editor-action-icon-opacity-hover, 0.74);
     }
     </style>
     <template is="dom-if" if="[[_modelNotSet]]">
@@ -73,7 +102,10 @@ See docs for other elements in the package for more styling options.
         <property-editor narrow="[[narrow]]" value="{{item.value}}" name="{{item.name}}" model="{{item}}" type-model="[[typeModel]]" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject" on-last-used-type="_updateLastUsedType"></property-editor>
       </template>
       <div class="add-action">
-        <paper-button class="action-button" on-tap="_addProperty">Add property</paper-button>
+        <paper-button class="action-button" on-tap="_addProperty">
+          <iron-icon class="action-icon" icon="arc:add-circle-outline"></iron-icon>
+          Add property
+        </paper-button>
       </div>
     </template>
     <template is="dom-if" if="[[model.isArray]]">
@@ -81,7 +113,10 @@ See docs for other elements in the package for more styling options.
         <property-editor narrow="[[narrow]]" no-key value="{{item.value}}" model="{{item}}" type-model="[[typeModel]]" on-remove-property="_removeProperty" on-duplicate-property="_onDuplicateObject" on-last-used-type="_updateLastUsedType"></property-editor>
       </template>
       <div class="add-action">
-        <paper-button class="action-button" on-tap="_addItem">Add array item</paper-button>
+        <paper-button class="action-button" on-tap="_addItem">
+          <iron-icon class="action-icon" icon="arc:add-circle-outline"></iron-icon>
+          Add array item
+        </paper-button>
       </div>
     </template>
   </template>
