@@ -32,7 +32,11 @@ The `property-type-selector` provides UI to change UI model element type.
 
 Custom property | Description | Default
 ----------------|-------------|----------
-`--property-type-selector` | Mixin applied to the element. | `{}`,
+`--property-type-selector` | Mixin applied to the element. | `{}`
+`--property-type-selector-dropdown` | Mixin applied to the dropdown menu element | `{}`
+`--property-type-selector-dropdown-list` | Mixin applied to the dropdown menu list element | `{}`
+`--property-type-selector-dropdown-list-item` | Mixin applied to the menu list item element | `{}`
+`--property-type-selector-dropdown-list-item-hover` | Mixin applied to the menu list item element when hovering | `{}`
 
 @group UI Elements
 @element property-type-selector
@@ -49,6 +53,19 @@ Custom property | Description | Default
 
     paper-dropdown-menu {
       @apply --layout-flex;
+      @apply --property-type-selector-dropdown;
+    }
+
+    paper-listbox {
+      @apply --property-type-selector-dropdown-list;
+    }
+
+    paper-item {
+      @apply --property-type-selector-dropdown-list-item;
+    }
+
+    paper-item:hover {
+      @apply --property-type-selector-dropdown-list-item-hover;
     }
     </style>
     <paper-dropdown-menu label="Select type" no-label-float>
