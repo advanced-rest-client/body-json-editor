@@ -74,7 +74,7 @@ Custom property | Description | Default
     }
 
     .action-button {
-      color: var(--body-json-editor-action-button-color, var(--secondary-button-color, --accent-color));
+      color: var(--body-json-editor-action-button-color, var(--secondary-button-color, var(--accent-color)));
       background: var(--body-json-editor-action-button-background, var(--secondary-button-background, #fff));
       transition: opacity 0.2s ease-in-out, color 0.2s ease-in-out;
       @apply --secondary-button;
@@ -82,7 +82,7 @@ Custom property | Description | Default
     }
 
     .action-button:hover {
-      color: var(--body-json-editor-action-button-color-hover, var(--secondary-button-color, --accent-color));
+      color: var(--body-json-editor-action-button-color-hover, var(--secondary-button-color, var(--accent-color)));
       background: var(--body-json-editor-action-button-background-hover, var(--secondary-button-background, #fff));
       @apply --secondary-button-hover;
       @apply --body-json-editor-action-button-hover;
@@ -90,14 +90,14 @@ Custom property | Description | Default
 
     .action-icon {
       margin-right: 8px;
-      color: var(--body-json-editor-action-icon-color, var(--secondary-button-color, --accent-color));
+      color: var(--body-json-editor-action-icon-color, var(--secondary-button-color, var(--accent-color)));
       opacity: var(--body-json-editor-action-icon-opacity, 0.54);
       transition: opacity 0.2s ease-in-out, color 0.2s ease-in-out;
     }
 
     .action-button:hover .action-icon,
     .action-icon:hover {
-      color: var(--body-json-editor-action-icon-color-hover, var(--secondary-button-color, --accent-color));
+      color: var(--body-json-editor-action-icon-color-hover, var(--secondary-button-color, var(--accent-color)));
       opacity: var(--body-json-editor-action-icon-opacity-hover, 0.74);
     }
 
