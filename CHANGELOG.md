@@ -1,3 +1,9 @@
+<a name="0.2.6"></a>
+## [0.2.6](https://github.com/advanced-rest-client/body-json-editor/compare/0.2.5...0.2.6) (2017-12-14)
+
+
+
+
 <a name="0.2.5"></a>
 ## [0.2.5](https://github.com/advanced-rest-client/body-json-editor/compare/0.2.4...0.2.5) (2017-12-14)
 
