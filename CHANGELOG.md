@@ -1,3 +1,13 @@
+<a name="0.2.5"></a>
+## [0.2.5](https://github.com/advanced-rest-client/body-json-editor/compare/0.2.4...0.2.5) (2017-12-14)
+
+
+### Update
+
+* Updated version of the dependency. ([756d3f9e87a029972fcc2b27bdb652d5e155e704](https://github.com/advanced-rest-client/body-json-editor/commit/756d3f9e87a029972fcc2b27bdb652d5e155e704))
+
+
+
 <a name="0.2.4"></a>
 ## [0.2.4](https://github.com/advanced-rest-client/body-json-editor/compare/0.2.2...0.2.4) (2017-11-10)
 
